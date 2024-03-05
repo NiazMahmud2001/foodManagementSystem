@@ -4,6 +4,7 @@ import {Dimensions} from 'react-native';
 import { BlurView } from 'expo-blur';
 import Loader1 from "../loader/Loader1";
 import time_loader from "../loader/Loader1"
+import axios from "axios";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -17,20 +18,38 @@ const Login = ({navigation}) => {
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         try {
-          setLoading(true);
-          if (!email || !password) {
-            Alert.alert("Please Fill All Fields");
-            setLoading(false)
-            return;
+            setLoading(true);
+            if (!email || !password) {
+              Alert.alert("Please Fill All Fields");
+              setLoading(false)
+              return;
+            }else{
+                var reg_url = "http://192.168.70.89:9090/api/auth/login/email/user/loginMail";
+                const {data} = await axios.post(
+                    reg_url , 
+                    {
+                        email: email,
+                        user_password : password,
+                    }
+                )
+                //console.log(data.message)
+                console.log("status of login: ", data)
+                if(data.success){
+                    navigation.navigate("MainInterface")
+                }else{
+                    Alert.alert(data.message)
+                }
+            }
+            setLoading(false);
+            console.log("login mail Data==> ", {email, password });
+          } catch (error) {
+              setLoading(false);
+              Alert.alert(error.response.data.message)
+              console.log(error.response.data.message)
+              console.log("user failed to login mail from front end!!!")
           }
-          setLoading(false);
-          console.log("Register Data==> ", {email, password });
-        } catch (error) {
-          setLoading(false);
-          console.log(error);
-        }
     };
 
     setTimeout(()=>{
@@ -40,8 +59,8 @@ const Login = ({navigation}) => {
     return (
     <>
     <View style={styles.container}>
-        <ImageBackground  blurRadius={0.73} source={require("../../assets/man2.png")} style={styles.image_design_1}>
-            <BlurView intensity={50} tint="regular" style={styles.inner_design}>
+        <ImageBackground  blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
+            <BlurView intensity={0} tint="light" style={styles.inner_design}>
                 <Text style={styles.pageTitle}>Login</Text>
                 <View style = {{marginHorizontal: 20}}>
 
@@ -100,7 +119,7 @@ const Login = ({navigation}) => {
                     
                 </View>
             </BlurView>
-            <Text style={styles.text_design}>Food Waste Management System</Text>
+            <Text style={styles.text_design}>FoodFlow</Text>
         </ImageBackground>
     </View>
     {easeLoader ? <Loader1 />: null }
@@ -128,6 +147,8 @@ var styles = StyleSheet.create({
         height: windowHeight/1.9,
         borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 0.5,
+        borderColor:"#000",
     },
     pageTitle: {
         fontSize: 40,
@@ -170,12 +191,13 @@ var styles = StyleSheet.create({
         textDecorationColor: "#000",
     },
     text_design:{
-        fontSize: 15,
+        fontSize: 20,
         textDecorationStyle: "solid",
         textDecorationLine:'underline' ,
         color: '#000000',
-        letterSpacing: 1,
-        paddingTop: 70
+        letterSpacing: 2,
+        paddingTop: 70,
+        fontWeight:"bold",
     }
 })
 

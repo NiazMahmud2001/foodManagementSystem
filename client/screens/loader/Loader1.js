@@ -6,7 +6,7 @@ import {Dimensions} from 'react-native'
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const Loader1 = () => {
+const Loader1 = ({navigation}) => {
   const position = new Animated.ValueXY({x:0 , y:0}); 
   Animated.timing(position,{
       toValue: {x: -390, y:0} , 
@@ -15,15 +15,31 @@ const Loader1 = () => {
       useNativeDriver: true,
   }).start()
 
+  /*
+  <Animated.View style={[styles.container , {
+    transform : [
+      {translateX: position.x}, 
+      {translateY: position.y}
+    ]
+  }
+  ]}>
+      <Video
+        ref={video}
+        style={styles.backgroundVideo}
+        source={require("../../assets/loader_3.mp4")}
+        resizeMode={ResizeMode.CONTAIN}
+        isLooping
+        onError={()=>{
+        console.log("error occur in loader file")
+        }}
+        shouldPlay
+      />
+  </Animated.View>
+  */
+
   const video = React.useRef(null);
   return (
-    <Animated.View style={[styles.container , {
-                transform : [
-                  {translateX: position.x}, 
-                  {translateY: position.y}
-                ]
-            }
-        ]}>
+    <View style={[styles.container ]}>
           <Video
               ref={video}
               style={styles.backgroundVideo}
@@ -35,7 +51,7 @@ const Loader1 = () => {
               }}
               shouldPlay
           />
-    </Animated.View>
+    </View>
   )
 }
 

@@ -15,7 +15,9 @@ app.use(express.json());
 app.use(morgan('dev'))
 
 //ROUTES
-app.use("/api/auth/reg/user" , require("./models/user_reg_model/reg_model")) //reg user route 
+app.use("/api/auth/reg/user" , require("./models/user_reg_model/reg_model"))
+app.use("/api/auth/login/email/user" , require("./models/user_login/login_mail_model"))
+app.use("/api/auth/login/phone/user" , require("./models/user_login/login_phone_model"))
 
 //PORT 
 const port = process.env.PORT || 8080  //get the "PORT" variable from ".env" folder || if you can't the use port "8080"

@@ -3,6 +3,7 @@ import { StyleSheet,View, Text, TextInput, TouchableOpacity, Alert, ImageBackgro
 import React, { useState } from "react";
 import {Dimensions} from 'react-native';
 import { BlurView } from 'expo-blur';
+import axios from "axios";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -15,25 +16,44 @@ const Register = ({navigation}) => {
     const [phoneNumber , setPhoneNumber] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const handleSubmit = () => {
-        try {
-          setLoading(true);
-          if (!name || !email || !password) {
+    const handleSubmit = async () => {
+        if(!name || !userName || !phoneNumber ||!email || !password) {
             Alert.alert("Please Fill All Fields");
-            setLoading(false)
             return;
-          }
-          setLoading(false);
-          console.log("Register Data==> ", { name, email, password });
-        } catch (error) {
-          setLoading(false);
-          console.log(error);
+        }else{
+            setLoading(true);
+            console.log("Register Data==> ", { name, email, password });
+            try{
+                var reg_url = "http://192.168.70.89:9090/api/auth/reg/user/register";
+                const {data} = await axios.post(
+                    reg_url , 
+                    {
+                        name: name,
+                        user_name : userName,
+                        user_password: password,
+                        email: email, 
+                        phone_number: phoneNumber
+                    }
+                )
+                //console.log(data.message)
+                console.log(data.success)
+                if(data.success){
+                    navigation.navigate("Login")
+                }else{
+                    Alert.alert(data.message)
+                }
+            }catch(error){
+                Alert.alert(error.response.data.message)
+                console.log(error.response.data.message)
+                console.log("user failed to register from front end!!!")
+            }
+            setLoading(false)
         }
     };
     return (
     <View style={styles.container}>
-        <ImageBackground  blurRadius={0.73} source={require("../../assets/man2.png")} style={styles.image_design_1}>
-            <BlurView intensity={50} tint="regular" style={styles.inner_design}>
+        <ImageBackground  blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
+            <BlurView intensity={0} tint="light" style={styles.inner_design}>
                 <Text style={styles.pageTitle}>Register</Text>
                 <View style = {{marginHorizontal: 20}}>
         
@@ -118,7 +138,7 @@ const Register = ({navigation}) => {
                     </Text>
                 </View>
             </BlurView>
-            <Text style={styles.text_design}>Food Waste Management System</Text>
+            <Text style={styles.text_design}>FoodFlow</Text>
         </ImageBackground>
     </View>
   )
@@ -143,6 +163,8 @@ var styles = StyleSheet.create({
         width: windowWidth-50,  
         borderRadius: 20,
         overflow: 'hidden',
+        borderWidth: 0.5,
+        borderColor:"#000",
     },
     pageTitle: {
         fontSize: 40,
@@ -189,12 +211,13 @@ var styles = StyleSheet.create({
         textDecorationColor: "#000",
     },
     text_design:{
-        fontSize: 15,
+        fontSize: 20,
         textDecorationStyle: "solid",
         textDecorationLine:'underline' ,
         color: '#000000',
-        letterSpacing: 1,
-        paddingTop: 50
+        letterSpacing: 2,
+        paddingTop: 70,
+        fontWeight:"bold",
     }
 })
 
