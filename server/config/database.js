@@ -36,17 +36,23 @@ class DatabaseObj{
               }
         })
     }
-    queryObject(data){
+    queryObject(data, callback){
         this.connection.query(data , (error, results, fields)=>{
             if (error){
                 console.log(`database operation is failed!!! :: ${error}` );
+                callback(error, null);
             }else{
                 console.log("database operation completed completed...");
-                console.log(results);
+                //console.log(results);
+                if(results.length == 0){
+                    callback(null, false);
+                }else{
+                    callback(null, true);
+                }
             }
         })
-        return true;
     }
+
 }
 
 module.exports = DatabaseObj

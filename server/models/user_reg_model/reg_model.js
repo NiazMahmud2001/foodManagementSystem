@@ -11,33 +11,21 @@ router.post("/register" , (req , res)=>{
 
     try{
         //get request from user
-        const {first_name, last_name, user_name, user_password, email, phone_number, address} = req.body; 
+        const {name, user_name, user_password, email, phone_number} = req.body; 
 
         //mysql connection
         var connectDB = new DatabaseObj();
         connectDB.createConnection();
 
-        if(first_name.length>20){
+        if(name.length>20){
             return res.status(400).send({
                 success: false , 
                 message: "Please Enter first name less than 20"
             });
-        }else if(!first_name){
+        }else if(!name){
             return res.status(400).send({
                 success: false , 
                 message: "Please Enter first name"
-            });
-        };
-
-        if (last_name.length>20){
-            return res.status(400).send({
-                success: false , 
-                message: "Please Enter last name length less than 20"
-            });
-        }else if(!last_name){
-            return res.status(400).send({
-                success: false , 
-                message: "Please Enter last name"
             });
         };
 
@@ -100,41 +88,57 @@ router.post("/register" , (req , res)=>{
                 message: "Please Enter phone_number"
             });
         };
-        
-        if(address.length>50){
-            return res.status(400).send({
-                success: false , 
-                message: "Please Enter your address length less than 50"
-            });
-        }else if(!address){
-            return res.status(400).send({
-                success: false , 
-                message: "Please Enter your address"
-            });
-        };
 
         //save user in Database
-        var sql_reg_commands = `INSERT INTO USER_INFO VALUES("${first_name}", "${last_name}", "${user_name}", "${user_password}", "${email}", "${phone_number}", "${address}")` ; 
-        var DBRes = connectDB.queryObject(sql_reg_commands);
-        if (DBRes){
-            res.status(201).send({
-                success: true, 
-                message: "Registration successful please login"
-            });
-        }else{
-            res.status(201).send({
-                success: false, 
-                message: "Registration got interrupt in Database!!!"
-            })
-        };
-
-        connectDB.removeConnection()
+        var sql_reg_commands = `INSERT INTO USER_INFO VALUES("${name}", "${user_name}", "${user_password}", "${email}", "${phone_number}")` ; 
+        connectDB.queryObject(sql_reg_commands ,(error, result) => {
+            if (error) {
+                console.error(error);
+                res.status(201).send({
+                    success: false, 
+                    message: "registration failed, please try again later!!!"
+                })
+            } else {
+                console.log(result);
+                if(result == true){
+                    //making table for each user base on the name of user "user"
+                    var creating_table_command = `CREATE TABLE IF NOT EXISTS ${user_name} (identifier_key INT NOT NULL , food_name VARCHAR (50) NOT NULL , food_id INT NOT NULL, quantity INT NOT NULL , weight INT NOT NULL, expDate VARCHAR (8) NOT NULL , UNIQUE (food_id , identifier_key), PRIMARY KEY (food_id , identifier_key))` ; 
+                    connectDB.queryObject(creating_table_command ,(error1, result1) => {
+                        if (error1) {
+                            console.error(error1);
+                            res.status(201).send({
+                                success: false, 
+                                message: "user registration done , but failed to create a storage table for user!!! "
+                            })
+                        }else{
+                            console.log(result1);
+                            if(result1 == true){
+                                res.status(201).send({
+                                    success: true, 
+                                    message: "registration successful , all done!!!"
+                                });
+                            }else if (result1 == false){
+                                res.status(201).send({
+                                    success: false, 
+                                    message: "registration failed in creating separate table for user!!!"
+                                })
+                            }
+                        }
+                    })
+                }else{
+                    res.status(201).send({
+                        success: false, 
+                        message: "registration failed in api !!!"
+                    })
+                }
+            }
+        });
+        //connectDB.removeConnection()
     }catch(error){
         console.log(`error cause in register api ${error}`)
         return res.status(500).send({
             success: false, 
             message: "error in register api",
-            error,
         });
     };
 })

@@ -1,11 +1,23 @@
 {
   "expo": {
+    "packagerOpts": {
+      "sourceExts": [
+        "js",
+        "ts",
+        "tsx",
+        "jsx"
+      ]
+    },
     "name": "client",
     "slug": "client",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "notification": {
+      "icon": "./assets/add_icon.png",
+      "color": "#ee8172"
+    },
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,16 +27,41 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyDeQd1qdYfoqzs3hyO7ZudrpfH6sIJOoyA"
+      },
+      "bundleIdentifier": "com.niazmahmud.client"
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDeQd1qdYfoqzs3hyO7ZudrpfH6sIJOoyA"
+        },
+        "keystore": {
+          "keystorePath": "credentials/android/keystore.jks",
+          "keystorePassword": "4d2f0c613e57360e58343f6643219841",
+          "keyAlias": "cfa3b6335732d46dd65d8713220a7c7b",
+          "keyPassword": "bb9ec489a80109dfd0325fbef6b9838a"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.niazmahmud.client"
     },
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cf21c573-cf21-40af-be84-a81e725f2d7a"
+      }
     }
   }
 }
