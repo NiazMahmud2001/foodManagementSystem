@@ -5,294 +5,427 @@ import {
     TouchableOpacity, 
     Image , 
     ScrollView,
-    Platform
+    Platform, 
+    Share
 } from 'react-native';
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Component, createRef  } from "react";
 import {Dimensions} from 'react-native';
 import { useFonts } from 'expo-font';
 import Loader1 from "../loader/Loader1"
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import * as Assets from 'expo-asset';
+import * as Font from 'expo-font';
 import { Dropdown } from 'react-native-element-dropdown'; //for drop down-box
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+//here try "ocrSpace" with the link "https://www.npmjs.com/package/ocr-space-api-wrapper" 
 
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }),
-});
-
-
-const Food_component = props =>{
-    return (
-        <View style={styles.reusable_component}>
-            <View style={styles.reusable_left}>
-                <Text style={styles.reusable_left_txt}>{props.food_name}</Text>
-                <Text style={styles.reusable_left_txt}>ID: {props.food_id}</Text>
-            </View>
-            <View style={styles.reusable_right}>
-                <View style={[styles.reusable_exp_date,{backgroundColor:props.bgColor, borderRadius: 10}]}>
-                    <Text style={{
-                        fontFamily: "Ubuntu_Medium", 
-                        fontSize: 12, 
-                        borderRadius:10
-                    }}>EXP: {props.exp_date}</Text>
+class FoodComponent extends Component {
+    render() {
+        const { props } = this.props;
+        return (
+            <View style={styles.reusable_component}>
+                <View style={styles.reusable_left}>
+                    <Text style={styles.reusable_left_txt}>{this.props.food_name}</Text>
+                    <Text style={styles.reusable_left_txt}>ID: {this.props.food_id}</Text>
                 </View>
-                <TouchableOpacity style={styles.reusable_logo} onPress={()=>{
-                    props.navigation.navigate("EditFoodInfo" , {
-                        nameIntFace: props.food_name,
-                        idIntFace: props.food_id,
-                        expDateIntFace: props.exp_date,
-                        quantityIntFace: props.quantity,
-                        weightIntFace: props.weight,
-                        keyIntFace: props.keys
-                    })
-                }}>
-                    <Image style={styles.reusable_logo_inner}
-                        source={require('../../assets/add_icon.png')}
-                    />
-                </TouchableOpacity>
+                <View style={styles.reusable_right}>
+                    <View
+                        style={[
+                            styles.reusable_exp_date,
+                            { backgroundColor: this.props.bgColor, borderRadius: 10 },
+                        ]}
+                        >
+                        <Text
+                            style={{
+                            fontFamily: 'Ubuntu_Medium',
+                            fontSize: 12,
+                            borderRadius: 10,
+                            }}
+                        >
+                            EXP: {this.props.exp_date}
+                        </Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.reusable_logo}
+                        onPress={() => {
+                            this.props.navigation.navigate('EditFoodInfo', {
+                            nameIntFace: this.props.food_name,
+                            idIntFace: this.props.food_id,
+                            expDateIntFace: this.props.exp_date,
+                            quantityIntFace: this.props.quantity,
+                            weightIntFace: this.props.weight,
+                            keyIntFace: this.props.keys,
+                            });
+                        }}
+                    >
+                        <Image
+                            style={styles.reusable_logo_inner}
+                            source={require('../../assets/add_icon.png')}
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
-    );
-};
-
-const dateChecker = (desiredDate)=>{
-    const [day, month, year] = desiredDate.split('/');
-    const targetDate = new Date(`20${year}`, month - 1, day);
-
-    const currentDate = new Date();
-    const timeDifference = targetDate - currentDate;
-
-    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-     
-    if(days<30){
-        return false;
-    }else{
-        return true;
+        );
     }
-};
+  }
 
-const MainInterface = ({navigation}) => {
+class MainInterface extends Component {
+    constructor(props) {
+        super(props);
 
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState(false);
-    const notificationListener = useRef();
-    const responseListener = useRef();
+        this.notificationListener = createRef();
+        this.responseListener = createRef();
 
-    async function schedulePushNotification() {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: "You've got mail! 📬",
-            body: 'Here is the notification body',
-          },
-          trigger: { seconds: 2 },
+        this.state = {
+            expoPushToken: '',
+            notification: false,
+            todaysDate: new Date().getDate(),
+            value: null,
+            isFocus: null,
+            isCamOrMan: null,
+            fontLoaded: false,
+        };
+
+        this.tips =  [
+            'Plan weekly meals to shop efficiently and reduce food waste',
+            'Store older items at the front to prioritize their use',
+            'Learn the nuances of expiration dates for smarter food choices',
+            'Freeze leftovers promptly to extend their freshness',
+            'Transform leftovers creatively for diverse and tasty meals',
+            'Serve smaller portions to minimize potential leftovers',
+            'Set up composting to recycle organic kitchen waste',
+            'Mindfully shop, avoiding bulk purchases of perishables',
+            'Consider donating surplus non-perishables to local charities',
+            'Opt for frozen or canned alternatives for longer shelf life',
+        ];
+        this.foods_details = [
+            {   
+                key: "1",
+                name: "Food-1" ,
+                ep_date: "04/07/24",
+                quantity: 10,
+                weight: 28,
+                id: "863885"
+            },
+            {   
+                key: "2",
+                name: "Food-2" ,
+                ep_date: "11/04/24",
+                quantity: 10,
+                weight: 28,
+                id: "759445"
+            },
+            {
+                key: "3",
+                name: "Food-3" ,
+                ep_date: "01/03/24",
+                quantity: 10,
+                weight: 28,
+                id: "008656"
+            },
+            {
+                key: "4",
+                name: "Food-4" ,
+                ep_date: "15/07/24",
+                quantity: 10,
+                id: "663267"
+            },
+            {
+                key: "5",
+                name: "Food-5" ,
+                ep_date: "04/07/24",
+                quantity: 10,
+                weight: 28,
+                id: "123445"
+            },
+            {
+                key: "6",
+                name: "Food-6" ,
+                ep_date: "28/02/24",
+                quantity: 10,
+                weight: 28,
+                id: "145465"
+            },
+            {
+                key: "7",
+                name: "Food-7" ,
+                ep_date: "20/04/24",
+                quantity: 10,
+                weight: 28,
+                id: "234526"
+            },
+            {
+                key: "8",
+                name: "Food-8" ,
+                ep_date: "01/06/24",
+                quantity: 10,
+                weight: 28,
+                id: "6773445"
+            },
+            {
+                key: "9",
+                name: "Food-9" ,
+                ep_date: "04/07/24",
+                quantity: 10,
+                weight: 28,
+                id: "123445"
+            },
+            {
+                key: "10",
+                name: "Food-10" ,
+                ep_date: "01/06/24",
+                quantity: 10,
+                weight: 28,
+                id: "142345"
+            },
+        ];
+
+        this.notificationDefine();
+        this.setExpDateNotification();
+        this.setTipsNotification();
+    };
+
+    notificationDefine(){
+        Notifications.setNotificationHandler({
+            handleNotification: async () => ({
+              shouldShowAlert: true,
+              shouldPlaySound: true,
+              shouldSetBadge: true,
+            }),
         });
-    }
+    };
 
-    useEffect(() => {
-        registerForPushNotificationsAsync().then(token =>{
-            setExpoPushToken(token)
-            console.log(token)
+    dateChecker (desiredDate){
+        const [day, month, year] = desiredDate.split('/');
+        const targetDate = new Date(`20${year}`, month - 1, day);
+    
+        const currentDate = new Date();
+        const timeDifference = targetDate - currentDate;
+    
+        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+         
+        if(days<30){
+            return false;
+        }else{
+            return true;
+        }
+    };
+    async schedulePushNotification() {
+        var nameArr = "";
+        const today = new Date();
+        
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1; 
+        const day = today.getDate();
+        var tot = day + (month*30) + (year*365);
+
+        this.foods_details.map(food => {
+            var dif_day  = parseInt(food.ep_date[0]+food.ep_date[1]);
+            var dif_month  = parseInt(food.ep_date[3]+food.ep_date[4]);
+            var diff_year  = parseInt("20"+food.ep_date[6]+food.ep_date[7]);
+            var diff = (dif_day + (dif_month*30)+ (diff_year*365))-tot;
+            //console.log("diff: ", diff , "|| tot" , tot)
+
+            if (diff <=7 && diff >=0){
+                nameArr = nameArr + food.name+ " expires on "+ food.ep_date + " || ";
+            };
+        });
+        if(nameArr == ""){
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "FoodFlow",
+                    body: "Hurrah!!! your foods are safe!!",
+                },
+                trigger: null,
+            });
+            var nameArr = "";
+        }else{
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "FoodFlow",
+                    body: nameArr,
+                },
+                trigger:null,
+            });
+            var nameArr = "";
+        }
+    };
+    setExpDateNotification(){
+        setInterval(()=>{
+            this.schedulePushNotification();
+        }, 43200000)
+    };
+
+    async schedulePushNotification2() {
+        const randomNumber = Math.floor(Math.random() * 10) + 1;
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: "FoodFlow",
+                body: `tips:${this.tips[randomNumber]}`,
+            },
+            trigger: null,
+        });
+    };
+
+    setTipsNotification(){
+        setInterval(()=>{
+            schedulePushNotification2();
+        }, 43200000)
+    };   
+
+    async componentDidMount() {
+        await this.registerForPushNotificationsAsync().then((token) => {
+            this.setState({ expoPushToken: token });
+            console.log(token);
         });
     
-        notificationListener.current = Notifications.addNotificationReceivedListener(
-            notification => {
-                setNotification(notification);
+        this.notificationListener = Notifications.addNotificationReceivedListener(
+            (notification) => {
+                this.setState({ notification });
             }
         );
     
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(
-            response => {
+        this.responseListener = Notifications.addNotificationResponseReceivedListener(
+            (response) => {
                 console.log(response);
             }
         );
+        await this.loadFonts();
+    }
     
-        return () => {
-          Notifications.removeNotificationSubscription(notificationListener.current);
-          Notifications.removeNotificationSubscription(responseListener.current);
-        };
-      }, []);
+    componentWillUnmount() {
+        Notifications.removeNotificationSubscription(this.notificationListener);
+        Notifications.removeNotificationSubscription(this.responseListener);
+    }    
 
-    async function registerForPushNotificationsAsync() {
+    async registerForPushNotificationsAsync() {
         let token;
         if (Device.isDevice) {
-          const { status: existingStatus } =await Notifications.getPermissionsAsync();
-
-          let finalStatus = existingStatus;
-          if (existingStatus !== "granted") {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-          }
-
-          if (finalStatus !== "granted") {
-            alert("Failed to get push token for push notification!");
-            return;
-          }
-          token = (await Notifications.getExpoPushTokenAsync()).data;
-          console.log(token);
-
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        
+            let finalStatus = existingStatus;
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+        
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            token = (await Notifications.getExpoPushTokenAsync()).data;
+            console.log(token);
         } else {
-          alert("Must use physical device for Push Notifications");
+            alert('Must use a physical device for Push Notifications');
         }
-      
-        if (Platform.OS === "android") {
-          Notifications.setNotificationChannelAsync("default", {
-            name: "default",
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            sound: true,
-            lightColor: "#FF231F7C",
-            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-            bypassDnd: true,
-            icon: "../../assets/notificationLogo.png"
-          });
+    
+        if (Platform.OS === 'android') {
+            Notifications.setNotificationChannelAsync('default', {
+                name: 'default',
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                sound: true,
+                lightColor: '#FF231F7C',
+                lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+                bypassDnd: true,
+                icon: '../../assets/notificationLogo.png',
+            });
         }
-      
         return token;
-    }
-
-    let [fontLoaded] = useFonts({
-        "Ubuntu_Regular" : require("../../assets/fonts/Ubuntu/Ubuntu-Regular.ttf"), 
-        "Ubuntu_Medium" : require("../../assets/fonts/Ubuntu/Ubuntu-Medium.ttf"), 
-        "NotoSansKR-VariableFont_wght" : require("../../assets/fonts/Noto_Sans_KR/static/NotoSansKR-Medium.ttf"),
-        "Fredoka" : require("../../assets/fonts/Fredoka/static/Fredoka-Regular.ttf"),
-        "kadamT" : require("../../assets/fonts/KdamThmorPro-Regular.ttf"),
-    });
-
-
-    const onPress = async ()=>{
-        console.log("button pressed!!!")
-        await schedulePushNotification();
-    };
-    const viewMap = ()=>{
-        navigation.navigate("FoodMap");
     };
 
-    const foods_details = [
-        {   
-            key: "1",
-            name: "Food-1" ,
-            ep_date: "04/07/24",
-            quantity: 10,
-            weight: 28,
-            id: "863885"
-        },
-        {   
-            key: "2",
-            name: "Food-2" ,
-            ep_date: "11/04/24",
-            quantity: 10,
-            weight: 28,
-            id: "759445"
-        },
-        {
-            key: "3",
-            name: "Food-3" ,
-            ep_date: "01/03/24",
-            quantity: 10,
-            weight: 28,
-            id: "008656"
-        },
-        {
-            key: "4",
-            name: "Food-4" ,
-            ep_date: "15/07/24",
-            quantity: 10,
-            id: "663267"
-        },
-        {
-            key: "5",
-            name: "Food-5" ,
-            ep_date: "04/07/24",
-            quantity: 10,
-            weight: 28,
-            id: "123445"
-        },
-        {
-            key: "6",
-            name: "Food-6" ,
-            ep_date: "28/02/24",
-            quantity: 10,
-            weight: 28,
-            id: "145465"
-        },
-        {
-            key: "7",
-            name: "Food-7" ,
-            ep_date: "20/04/24",
-            quantity: 10,
-            weight: 28,
-            id: "234526"
-        },
-        {
-            key: "8",
-            name: "Food-8" ,
-            ep_date: "01/06/24",
-            quantity: 10,
-            weight: 28,
-            id: "6773445"
-        },
-        {
-            key: "9",
-            name: "Food-9" ,
-            ep_date: "04/07/24",
-            quantity: 10,
-            weight: 28,
-            id: "123445"
-        },
-        {
-            key: "10",
-            name: "Food-10" ,
-            ep_date: "01/06/24",
-            quantity: 10,
-            weight: 28,
-            id: "142345"
-        },
-    ];
+    async getLocalImageUrl() {
+        try {
+            const fileName = 'level_7.png';
+            const asset = Assets.Asset.fromModule(require(`../../assets/levels/share_level/level_7.jpg`));
+        
+            //console.log(asset)
+            await FileSystem.downloadAsync(asset.uri, FileSystem.documentDirectory + fileName);
+        
+            const localAssetUri = `${FileSystem.documentDirectory}${fileName}`;
+            return localAssetUri;
+        } catch (error) {
+            console.error('Error getting local image URL', error);
+        }
+    };
 
-    const camOrMan = [
-        {key:'1', value:'By Scanning'},
-        {key:'2', value:'Manually'},
-    ]
+    viewMap(){
+        this.props.navigation.navigate("FoodMap");
+    };
 
-    const [value, setValue] = useState(null);
-    const [isFocus, setIsFocus] = useState(false);
-    const [isCamOrMan , setCamOrMan] = useState(null);
+    onPress() {
+        console.log("button pressed!!!");
+    };
 
-    useEffect(()=>{
-       console.log("search item: ",value)
-       console.log("scan using camera or manually: " , isCamOrMan)
-    })
+    async badgeShare() {
+        try{
+            const localAssetUri = await this.getLocalImageUrl();
+            Sharing.shareAsync(`file://${localAssetUri}`) //this lib has problem with sharing with caption/title 
+            /*
+            const title = 'Check out this image!';
+            await Share.share({
+                //It has issue: it just share the message not url 
+                title,
+                url: localAssetUri,
+                message: title,
+            })
+            */
+        }catch(error){
+            console.error('Error sharing file with custom title', error);
+        }
+    };
 
-    const renderLabel = () => {
+    renderLabel () {
         //this part renders when you click over the "search box"
-        if (value && isFocus) {
-          return (
-            <Text style={[styles.label, isFocus && { color: 'blue' }]}>
-              Searching Food
-            </Text>
-          );
+        if (this.state.value && this.state.isFocus) {
+            return (
+                <Text style={[styles.label, this.state.isFocus && { color: 'blue' }]}>
+                    Searching Food
+                </Text>
+            );
         }
         return null;
     };
 
-    if (!fontLoaded){
-        return (
-            <Loader1/>
-        )
-    }else{
+    async loadFonts() {
+        try {
+            await Font.loadAsync({
+                "Ubuntu_Regular" : require("../../assets/fonts/Ubuntu/Ubuntu-Regular.ttf"), 
+                "Ubuntu_Medium" : require("../../assets/fonts/Ubuntu/Ubuntu-Medium.ttf"), 
+                "NotoSansKR-VariableFont_wght" : require("../../assets/fonts/Noto_Sans_KR/static/NotoSansKR-Medium.ttf"),
+                "Fredoka" : require("../../assets/fonts/Fredoka/static/Fredoka-Regular.ttf"),
+                "kadamT" : require("../../assets/fonts/KdamThmorPro-Regular.ttf"),
+            });
+            this.setState({ fontLoaded: true });
+        } catch (error) {
+            console.error('Error loading fonts', error);
+            this.setState({ fontLoaded: false });
+        }
+    }
+
+    render(){
+        const camOrMan = [
+            {key:'1', value:'By Scanning'},
+            {key:'2', value:'Manually'},
+        ]
+        const { fontLoaded } = this.state;
+
+        if (!fontLoaded){
+            return (
+                <Loader1/>
+            )
+        }else{
             return (
                 <View style={styles.container}>
                     <View style= {styles.app_description}>
                         <Text style={styles.inner_app_name_text}>FoodFlow</Text>
-                        <TouchableOpacity style={styles.top_location_button} onPress={viewMap}>
+                        <TouchableOpacity style={styles.top_location_button} onPress={()=>{this.viewMap()}}>
                             <Text style={styles.top_button_txt_inner}>View Location</Text>
                         </TouchableOpacity>
                     </View>
@@ -305,9 +438,11 @@ const MainInterface = ({navigation}) => {
                             </View>
                             <View style={styles.inner_img_view_top_right_name}>
                                 <View style={styles.upper_info_cont_badge}>
-                                    <Image style={styles.badge_logo}
-                                        source={require('../../assets/levels/level_7.png')}
-                                    />
+                                    <TouchableOpacity onPress={()=>{this.badgeShare()}}>
+                                        <Image style={styles.badge_logo}
+                                            source={require('../../assets/levels/level_7.png')}
+                                        />
+                                    </TouchableOpacity>
                                 </View>
                                 <View style={styles.upper_info_cont}>
                                     <Text style={styles.inner_img_view_top_right_name_text}> Abdurrahman </Text>
@@ -318,7 +453,7 @@ const MainInterface = ({navigation}) => {
                             </View>
                         </View>
                         <View style={styles.inner_img_view_bottom}>
-                            <TouchableOpacity style={styles.top_button_left} onPress={onPress}>
+                            <TouchableOpacity style={styles.top_button_left} onPress={()=>{this.onPress()}}>
                                 <Text style={styles.top_button_txt_left}>View Profile</Text>
                             </TouchableOpacity>
                             <View style={styles.canScanOrMan}>
@@ -335,13 +470,14 @@ const MainInterface = ({navigation}) => {
                                         labelField="value"
                                         valueField="key"
                                         placeholder={"Select Method"}
-                                        value={value}
+                                        value={this.state.value}
                                         onChange={(item) => {
-                                            setCamOrMan(item.value);
+                                            //setCamOrMan(item.value);
+                                            this.setState({value: item.value})
                                             if (item.value == "By Scanning"){
-                                                navigation.navigate("CamScan")
+                                                this.props.navigation.navigate("CamScan")
                                             }else{
-                                                navigation.navigate("EnterFoodManually")
+                                                this.props.navigation.navigate("EnterFoodManually")
                                             }
                                             //console.log(`asdf ${item.value}`)
                                         }}
@@ -350,30 +486,37 @@ const MainInterface = ({navigation}) => {
                         </View>
                     </View>
                     <View style={styles.containerss}>
-                        {renderLabel()}
+                        {this.renderLabel()}
                         <Dropdown
-                            style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+                            style={[styles.dropdown, this.state.isFocus && { borderColor: 'blue' }]}
                             containerStyle={styles.dropdownBox_style}
                             placeholderStyle={styles.placeholderStyle}
                             selectedTextStyle={styles.selectedTextStyle}
                             inputSearchStyle={styles.inputSearchStyle}
                             iconStyle={styles.iconStyle}
                             backgroundColor={"rgba(0,0,0,0.3)"}
-                            data={foods_details}
+                            data={this.foods_details}
                             search
                             maxHeight={300}
                             labelField="name"
                             valueField="key"
-                            placeholder={!isFocus ? 'Search/Select Food' : '...'}
+                            placeholder={!(this.state.isFocus) ? 'Search/Select Food' : '...'}
                             searchPlaceholder="Search..."
-                            value={value}
-                            onFocus={() => setIsFocus(true)}
-                            onBlur={() => setIsFocus(false)}
+                            value={this.state.value}
+                            onFocus={() => {
+                                this.setState({
+                                    isFocus : true
+                                })
+                            }}
+                            onBlur={() => {
+                                this.setState({
+                                    isFocus : false
+                                })
+                            }}
                             onChange={(item) => {
-                                setValue(item.name);
-                                //console.log(`asdf ${item.name}`)
-                                setIsFocus(false);
-                                navigation.navigate("EditFoodInfo" , {
+                                this.setState({ value : item.name })
+                                this.setState({ isFocus : false })
+                                this.props.navigation.navigate("EditFoodInfo" , {
                                     nameIntFace: item.name,
                                     idIntFace: item.id,
                                     expDateIntFace: item.ep_date,
@@ -389,15 +532,17 @@ const MainInterface = ({navigation}) => {
                         />
                     </View>
                     <ScrollView style= {styles.inner_product_view}>
-                        {foods_details.map((item, index)=>(
-                            <Food_component key={item.key} keys={item.key} food_name={item.name} exp_date={item.ep_date} food_id={item.id} weight={item.weight} quantity={item.quantity} navigation={navigation} bgColor={dateChecker(item.ep_date)? "#719A70":"#f00"}/>
+                        {this.foods_details.map((item, index)=>(
+                            <FoodComponent key={item.key} keys={item.key} food_name={item.name} exp_date={item.ep_date} food_id={item.id} weight={item.weight} quantity={item.quantity} navigation={this.props.navigation} bgColor={this.dateChecker(item.ep_date)? "#719A70":"#f00"}/>
                         ))}
                     </ScrollView>
                 </View>
             )
+        }
     }
-}
 
+}
+  
 const styles = StyleSheet.create({
     container: {
         display: "flex", 

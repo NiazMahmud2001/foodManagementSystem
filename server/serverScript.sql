@@ -20,12 +20,24 @@ CREATE TABLE IF NOT EXISTS VOLUNTEER_INFO (
     vol_phone_number VARCHAR(13) NOT NULL,
     vol_uid VARCHAR(20) NOT NULL,
     vol_area VARCHAR(50) NOT NULL,
+    org_name VARCHAR(50) NOT NULL,
 	PRIMARY KEY (vol_email, vol_phone_number,vol_uid), 
     unique(vol_email, vol_phone_number, vol_uid)
 );
 
 select * from USER_INFO;
+select * from VOLUNTEER_INFO;
 #drop table USER_INFO;
+#drop table VOLUNTEER_INFO;
+
+#INSERT INTO VOLUNTEER_INFO VALUES("Abdurrahman" , "ABD1122", "123abc", "abdurrahman@gmail.com", "+971521809001" , "11@abc" , "Sharjah" , "AUS");
+#INSERT INTO VOLUNTEER_INFO VALUES("AbdlAziz" , "Aziz1214", "1asc@123", "aziz01944@gmail.com", "+971521809005" , "11@abc" , "Dubai" , "UOS");
+#select * from VOLUNTEER_INFO;
+
+
+
+
+
 
 
 

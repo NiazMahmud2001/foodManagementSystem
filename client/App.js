@@ -11,6 +11,7 @@ import EnterFoodManually from "./screens/scanFood/enterFoodManually/EnterFoodMan
 import EnterFoodWithBarCode from "./screens/scanFood/enterFoodManually/EnterFoodWithBarCode";
 import EditFoodInfo from "./screens/EditFoodInfo/EditFoodInfo";
 import Loader1 from './screens/loader/Loader1';
+import VolInterface from "./screens/VolMainInterface/VolInterface"
 
 import MainInterface from "./screens/userInterface/MainInterface" ;
 import { EntryExitTransition } from 'react-native-reanimated';
@@ -83,8 +84,14 @@ export default function App() {
             component={Loader1}
             options={{headerShown:false}}
           />
+          <stack.Screen
+            name="VolInterface"
+            component={VolInterface}
+            options={{headerShown:false}}
+          />
       </stack.Navigator>
     </NavigationContainer>
+    
   );
 }
 

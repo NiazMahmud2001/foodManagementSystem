@@ -17,6 +17,7 @@ app.use(morgan('dev'))
 //ROUTES
 app.use("/api/auth/reg/user" , require("./models/user_reg_model/reg_model"))
 app.use("/api/auth/login/email/user" , require("./models/user_login/login_mail_model"))
+app.use("/api/auth/login/email/volunteer" , require("./models/vol_login/vol_login"))
 app.use("/api/auth/login/phone/user" , require("./models/user_login/login_phone_model"))
 
 //PORT 
