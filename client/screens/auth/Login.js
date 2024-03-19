@@ -1,202 +1,222 @@
-import React, { Component } from "react";
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, ImageBackground } from 'react-native';
-import { Dimensions } from 'react-native';
+import { StyleSheet,View, Text, TextInput, TouchableOpacity, Alert, ImageBackground} from 'react-native'
+import React, { useState } from "react";
+import {Dimensions} from 'react-native';
 import { BlurView } from 'expo-blur';
 import Loader1 from "../loader/Loader1";
+import time_loader from "../loader/Loader1"
 import axios from "axios";
 import { Dropdown } from 'react-native-element-dropdown';
+
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-class Login extends Component {
-    constructor(props) {
-        super(props);
+const Login = ({navigation , route}) => {
 
-        this.state = {
-            userType: "",
-            easeLoader: true,
-            email: "",
-            password: "",
-            loading: false,
-            value: null,
-        };
+    const [userType , setUserType] = useState("")
+    const [easeLoader , setEraseLoader] = useState(true)
 
-        //this.ip = "192.168.70.35";
-        this.ip = "172.29.22.18";
-    }
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [value, setValue] = useState();
 
-    componentDidMount() {
-        setTimeout(() => {
-            this.setState({ easeLoader: false });
-        }, 8000);
-    }
+    //var ip = "192.168.70.35";
+    var ip = "172.29.22.18";
+    //var ip = "172.29.45.90";
+    var port = "9090"
 
-    handleSubmit = async () => {
+    const handleSubmit = async () => {
         try {
-            this.setState({ loading: true });
-
-            const { email, password, userType } = this.state;
-
+            setLoading(true);
             if (!email || !password) {
-                Alert.alert("Please Fill All Fields");
-                this.setState({ loading: false });
-                return;
-            } else {
+              Alert.alert("Please Fill All Fields");
+              setLoading(false)
+              return;
+            }else{
                 console.log("userType: ", userType);
-                if (userType === "User") {
-                    var reg_url = `http://${this.ip}:9090/api/auth/login/email/user/loginMail`;
-                    console.log(email , password)
-                    const { data } = await axios.post(
-                        reg_url,
+                if (userType == "User"){
+                    var reg_url = `http://${ip}:${port}/api/auth/login/email/user/loginMail`;
+                    const {data} = await axios.post(
+                        reg_url , 
                         {
                             email: email,
-                            user_password: password,
+                            user_password : password,
                         }
-                    );
-                    console.log("status of login: ", data);
+                    )
+                    console.log(data.message)
+                    const points = data.message.points;
+                    const userNName = data.message.user_name;
+                    console.log("status of login: ", data)
                     if(data.success){
-                        this.props.navigation.navigate("MainInterface");
+                        var foodFetch_url = `http://${ip}:${port}/api/auth/fetch/food/allFood/fetchFood`;
+                        const {data} = await axios.post(
+                            foodFetch_url , 
+                            {
+                                email: email,
+                                phone: "fromMail"
+                            }
+                        )
+                        //console.log("data got1: " ,data.message)
+                        if(data.success){
+                            navigation.navigate("MainInterface",{
+                                email: email,
+                                phone: "fromMail", 
+                                ip: ip, 
+                                port: port,
+                                foodData: data.message,
+                                points: points,
+                                userNName: userNName
+                            })
+                        }else{
+                            Alert.alert("Food fetching failed!!!")
+                        }
                     }else{
                         Alert.alert(data.message)
                     }
-                } else {
-                    var reg_url = `http://${this.ip}:9090/api/auth/login/email/volunteer/loginMailVol`;
-                    console.log(email , password)
-                    const { data } = await axios.post(
-                        reg_url,
+                }else{
+                    console.log("vol call!!!")
+                    var reg_url = `http://${ip}:9090/api/auth/login/email/volunteer/loginMailVol`;
+                    const {data} = await axios.post(
+                        reg_url , 
                         {
                             email: email,
-                            user_password: password,
+                            user_password : password,
                         }
-                    );
-                    console.log("status of login: ", data);
+                    )
+                    //console.log(data.message)
+                    console.log("status of login: ", data)
                     if(data.success){
                         //console.log(data.volID , data.orgName)
-                        this.props.navigation.navigate("VolInterface", {
+                        navigation.navigate("VolInterface", {
                             volId: data.volID,
-                            orgName: data.orgName
-                        });
+                            orgName: data.orgName, 
+                            ip: ip, 
+                            port: port
+                        })
+                        //console.log("asdf")
                     }else{
                         Alert.alert(data.message)
                     }
                 }
-        
-                this.setState({ loading: false });
-                console.log("login mail Data==> ", { email, password });
             }
-
-            this.setState({ loading: false });
-            console.log("login mail Data==> ", { email, password });
+            setLoading(false);
+            console.log("login mail Data==> ", {email, password });
         } catch (error) {
-            this.setState({ loading: false });
-            Alert.alert(error.response.data.message);
-            console.log(error.response.data.message);
-            console.log("user failed to login mail from front end!!!");
+            setLoading(false);
+            Alert.alert(error.response.data.message)
+            console.log(error.response.data.message)
+            console.log("user failed to login mail from front end!!!")
         }
     };
+    const useType = [
+        {key:'1', value:'User'},
+        {key:'2', value:'Volunteer'},
+    ]
 
-    render() {
-        const { navigation } = this.props;
-        const { easeLoader, email, password, loading, userType, value } = this.state;
+    setTimeout(()=>{
+        setEraseLoader(false)
+    }, 8000)
 
-        const useType = [
-            { key: '1', value: 'User' },
-            { key: '2', value: 'Volunteer' },
-        ];
+    return (
+    <>
+    <View style={styles.container}>
+        <ImageBackground  blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
+            <BlurView intensity={0} tint="light" style={styles.inner_design}>
+                <Text style={styles.pageTitle}>Login</Text>
+                <View style = {{marginHorizontal: 20}}>
 
-        return (
-            <>
-                <View style={styles.container}>
-                    <ImageBackground blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
-                        <BlurView intensity={0} tint="light" style={styles.inner_design}>
-                            <Text style={styles.pageTitle}>Login</Text>
-                            <View style={{ marginHorizontal: 20 }}>
-                                <Text>Email</Text>
-                                <TextInput
-                                    style={styles.inputBox}
-                                    placeholder="Please enter your Email"
-                                    autoCorrect={false}
-                                    keyboardType="email-address"
-                                    autoComplete="email"
-                                    value={email}
-                                    onChangeText={(text) => {
-                                        this.setState({ email: text });
-                                    }}
-                                />
-                                <Text>Password</Text>
-                                <TextInput
-                                    style={styles.inputBox}
-                                    placeholder="Please enter your password"
-                                    secureTextEntry={true}
-                                    autoComplete="password"
-                                    value={password}
-                                    onChangeText={(text) => {
-                                        this.setState({ password: text });
-                                    }}
-                                />
-                                <View style={styles.canScanOrMan}>
-                                    <Dropdown
-                                        style={styles.dropdown_scan}
-                                        containerStyle={styles.dropdownBox_style}
-                                        placeholderStyle={styles.placeholderStyle}
-                                        selectedTextStyle={styles.selectedTextStyle}
-                                        inputSearchStyle={styles.inputSearchStyle}
-                                        iconStyle={styles.iconStyle}
-                                        backgroundColor={"rgba(0,0,0,0.3)"}
-                                        data={useType}
-                                        maxHeight={150}
-                                        labelField="value"
-                                        valueField="key"
-                                        value={value}
-                                        placeholder={"Select User Type"}
-                                        onChange={(item) => {
-                                            this.setState({ value: item.value });
-                                            if (item.value === "User") {
-                                                this.setState({ userType: "User" });
-                                            } else {
-                                                this.setState({ userType: "Volunteer" });
-                                            }
-                                        }}
-                                    />
-                                </View>
-                                <TouchableOpacity style={styles.submitBtn} onPress={() => { this.handleSubmit(); }}>
-                                    <Text style={styles.btnText}>
-                                        {loading ? "Please wait..." : "Login"}
-                                    </Text>
-                                </TouchableOpacity>
-                                <Text
-                                    style={styles.linkText}
-                                    onPress={() => {
-                                        navigation.navigate("LoginPhone", {
-                                            ip: this.ip
-                                        });
-                                    }}
-                                >
-                                    Login With Phone number
-                                </Text>
-                                <Text
-                                    style={styles.linkText}
-                                    onPress={() => {
-                                        navigation.navigate("Register", {
-                                            ip: this.ip
-                                        });
-                                    }}
-                                >
-                                    Sign Up
-                                </Text>
-                            </View>
-                        </BlurView>
-                        <Text style={styles.text_design}>FoodFlow</Text>
-                    </ImageBackground>
+                    <Text>Email</Text>
+                    <TextInput 
+                        style={styles.inputBox}
+                        placeholder = "Please enter your Email"
+                        autoCorrect= {false}
+                        keyboardType="email-address"
+                        autoComplete="email"
+                        value={email}
+                        onChangeText={(text)=>{
+                            setEmail(text)
+                        }}
+                    />
+
+                    <Text>Password</Text>
+                    <TextInput 
+                        style={styles.inputBox}
+                        placeholder = "Please enter your password"
+                        secureTextEntry={true}
+                        autoComplete="password"
+                        value={password}
+                        setValue={setPassword}
+                        onChangeText={(text)=>{
+                            setPassword(text)
+                        }}
+                    />
+                    <View style={styles.canScanOrMan}>
+                        <Dropdown
+                            style={styles.dropdown_scan}
+                            containerStyle={styles.dropdownBox_style}
+                            placeholderStyle={styles.placeholderStyle}
+                            selectedTextStyle={styles.selectedTextStyle}
+                            inputSearchStyle={styles.inputSearchStyle}
+                            iconStyle={styles.iconStyle}
+                            backgroundColor={"rgba(0,0,0,0.3)"}
+                            data={useType}
+                            maxHeight={150}
+                            labelField="value"
+                            valueField="key"
+                            value={value}
+                            placeholder={"Select User Type"}
+                            onChange={(item) => {
+                                setValue(item.value)
+                                if (item.value == "User"){
+                                    setUserType("User")
+                                }else{
+                                    setUserType("Volunteer")
+                                }
+                            }}
+                        />
+                    </View>
+                    <TouchableOpacity style={styles.submitBtn} onPress={()=>{handleSubmit()}}>
+                        <Text style={styles.btnText}>
+                            {loading? "Please wait..." : "Login"}
+                            {/*this loading is useState*/}
+                        </Text>
+                    </TouchableOpacity>
+
+                    <Text 
+                        style={styles.linkText} 
+                        onPress={()=>{
+                            navigation.navigate("LoginPhone", {
+                                ip: ip, 
+                                port: port
+                            })
+                        }}
+                    >
+                        Login With Phone number
+                    </Text>
+                    <Text 
+                        style={styles.linkText} 
+                        onPress={()=>{
+                            navigation.navigate("Register" , {
+                                ip: ip, 
+                                port: port
+                            })
+                        }}
+                    >
+                        Sign Up
+                    </Text>
+                    
                 </View>
-                {easeLoader ? <Loader1 /> : null}
-            </>
-        );
-    }
+            </BlurView>
+            <Text style={styles.text_design}>FoodFlow</Text>
+        </ImageBackground>
+    </View>
+    {easeLoader ? <Loader1 />: null }
+    </>
+  )
 }
 
-const styles = StyleSheet.create({
+var styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: "center", 
@@ -306,6 +326,6 @@ const styles = StyleSheet.create({
         height: 35,
         fontSize: 13,
     },
-});
+})
 
-export default Login;
+export default Login

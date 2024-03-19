@@ -17,10 +17,10 @@ class DatabaseObj{
     createConnection(){
         this.connection.connect((error) => {
             if (error) {
-              console.error('Error connecting to MySQL database');
+              //console.error('Error connecting to MySQL database');
               return false;
             } else {
-              console.log('Connected to MySQL database....');
+              //console.log('Connected to MySQL database....');
               return true;
             }
         });
@@ -28,10 +28,10 @@ class DatabaseObj{
     removeConnection(){
         this.connection.end((error)=>{
             if (error) {
-                console.error('failed ot disconnect with server!!!');
+                //console.error('failed ot disconnect with server!!!');
                 return false;
               } else {
-                console.log('Successfully disconnected with server ....');
+                //console.log('Successfully disconnected with server ....');
                 return true;
               }
         })
@@ -39,10 +39,10 @@ class DatabaseObj{
     queryObject(data, callback){
         this.connection.query(data , (error, results, fields)=>{
             if (error){
-                console.log(`database operation is failed!!! :: ${error}` );
+                //console.log(`database operation is failed!!! :: ${error}` );
                 callback(error, null);
             }else{
-                console.log("database operation completed completed...");
+                //console.log("database operation completed completed...");
                 //console.log(results);
                 if(results.length == 0){
                     callback(null, false);
@@ -55,10 +55,10 @@ class DatabaseObj{
     volQueryObject(data, callback){
         this.connection.query(data , (error, results, fields)=>{
             if (error){
-                console.log(`database operation is failed!!! :: ${error}` );
+                //console.log(`database operation is failed!!! :: ${error}` );
                 callback(error, null, results);
             }else{
-                console.log("database operation completed completed...");
+                //console.log("database operation completed completed...");
                 //console.log(results);
                 if(results.length == 0){
                     callback(null, false, results);
@@ -67,7 +67,7 @@ class DatabaseObj{
                 }
             }
         })
-    }
+    };
 
 }
 

@@ -8,7 +8,7 @@ import {
     Platform, 
     Share
 } from 'react-native';
-import React, { useState, useEffect, useRef, Component, createRef  } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {Dimensions} from 'react-native';
 import { useFonts } from 'expo-font';
 import Loader1 from "../loader/Loader1"
@@ -17,206 +17,114 @@ import * as Notifications from 'expo-notifications';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as Assets from 'expo-asset';
-import * as Font from 'expo-font';
+
 import { Dropdown } from 'react-native-element-dropdown'; //for drop down-box
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 //here try "ocrSpace" with the link "https://www.npmjs.com/package/ocr-space-api-wrapper" 
+//before that  you need to capture picture. 
 
-class FoodComponent extends Component {
-    render() {
-        const { props } = this.props;
-        return (
-            <View style={styles.reusable_component}>
-                <View style={styles.reusable_left}>
-                    <Text style={styles.reusable_left_txt}>{this.props.food_name}</Text>
-                    <Text style={styles.reusable_left_txt}>ID: {this.props.food_id}</Text>
-                </View>
-                <View style={styles.reusable_right}>
-                    <View
-                        style={[
-                            styles.reusable_exp_date,
-                            { backgroundColor: this.props.bgColor, borderRadius: 10 },
-                        ]}
-                        >
-                        <Text
-                            style={{
-                            fontFamily: 'Ubuntu_Medium',
-                            fontSize: 12,
-                            borderRadius: 10,
-                            }}
-                        >
-                            EXP: {this.props.exp_date}
-                        </Text>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.reusable_logo}
-                        onPress={() => {
-                            this.props.navigation.navigate('EditFoodInfo', {
-                            nameIntFace: this.props.food_name,
-                            idIntFace: this.props.food_id,
-                            expDateIntFace: this.props.exp_date,
-                            quantityIntFace: this.props.quantity,
-                            weightIntFace: this.props.weight,
-                            keyIntFace: this.props.keys,
-                            });
-                        }}
-                    >
-                        <Image
-                            style={styles.reusable_logo_inner}
-                            source={require('../../assets/add_icon.png')}
-                        />
-                    </TouchableOpacity>
-                </View>
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+});
+
+
+const Food_component = props =>{
+    return (
+        <View style={styles.reusable_component}>
+            <View style={styles.reusable_left}>
+                <Text style={styles.reusable_left_txt}>{props.food_name}</Text>
+                <Text style={styles.reusable_left_txt}>ID: {props.food_id}</Text>
             </View>
-        );
+            <View style={styles.reusable_right}>
+                <View style={[styles.reusable_exp_date,{backgroundColor:props.bgColor, borderRadius: 10}]}>
+                    <Text style={{
+                        fontFamily: "Ubuntu_Medium", 
+                        fontSize: 12, 
+                        borderRadius:10
+                    }}>EXP: {props.exp_date}</Text>
+                </View>
+                <TouchableOpacity style={styles.reusable_logo} onPress={()=>{
+                    props.navigation.navigate("EditFoodInfo" , {
+                        nameIntFace: props.food_name,
+                        idIntFace: props.food_id,
+                        expDateIntFace: props.exp_date,
+                        quantityIntFace: props.quantity,
+                        weightIntFace: props.weight,
+                        keyIntFace: props.keys, 
+                        email: props.email,
+                        phone: props.phone,
+                        ip : props.ip , 
+                        port : props.port,
+                        points: props.points,
+                        userNName: props.userNName
+                    })
+                }}>
+                    <Image style={styles.reusable_logo_inner}
+                        source={require('../../assets/add_icon.png')}
+                    />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
+
+const dateChecker = (desiredDate)=>{
+    const [day, month, year] = desiredDate.split('/');
+    const targetDate = new Date(`20${year}`, month - 1, day);
+
+    const currentDate = new Date();
+    const timeDifference = targetDate - currentDate;
+
+    const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+     
+    if(days<30){
+        return false;
+    }else{
+        return true;
     }
-  }
+};
 
-class MainInterface extends Component {
-    constructor(props) {
-        super(props);
+const MainInterface = ({navigation , route}) => {
 
-        this.notificationListener = createRef();
-        this.responseListener = createRef();
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState(false);
+    const notificationListener = useRef();
+    const responseListener = useRef();
+    const {email} = route.params
+    const {phone} = route.params
+    const {ip} = route.params
+    const {port} = route.params
+    const {points} = route.params
+    const {userNName} = route.params
+    //console.log("main interface port and ip: ", port , ip)
+    var {foodData} = route.params
+    //console.log(foodData[0].identifier_key)
+    if(foodData.length >1 && foodData[0].identifier_key == 0){
+        foodData.shift()
+    }
 
-        this.state = {
-            expoPushToken: '',
-            notification: false,
-            todaysDate: new Date().getDate(),
-            value: null,
-            isFocus: null,
-            isCamOrMan: null,
-            fontLoaded: false,
-        };
+    const [todaysDate, setTodaysDate] = useState(10)
+    var tips = [
+        "Plan weekly meals to shop efficiently and reduce food waste",
+        "Store older items at the front to prioritize their use",
+        "Learn the nuances of expiration dates for smarter food choices",
+        "Freeze leftovers promptly to extend their freshness",
+        "Transform leftovers creatively for diverse and tasty meals",
+        "Serve smaller portions to minimize potential leftovers",
+        "Set up composting to recycle organic kitchen waste",
+        "Mindfully shop, avoiding bulk purchases of perishables",
+        "Consider donating surplus non-perishables to local charities",
+        "Opt for frozen or canned alternatives for longer shelf life"
+    ]
 
-        this.tips =  [
-            'Plan weekly meals to shop efficiently and reduce food waste',
-            'Store older items at the front to prioritize their use',
-            'Learn the nuances of expiration dates for smarter food choices',
-            'Freeze leftovers promptly to extend their freshness',
-            'Transform leftovers creatively for diverse and tasty meals',
-            'Serve smaller portions to minimize potential leftovers',
-            'Set up composting to recycle organic kitchen waste',
-            'Mindfully shop, avoiding bulk purchases of perishables',
-            'Consider donating surplus non-perishables to local charities',
-            'Opt for frozen or canned alternatives for longer shelf life',
-        ];
-        this.foods_details = [
-            {   
-                key: "1",
-                name: "Food-1" ,
-                ep_date: "04/07/24",
-                quantity: 10,
-                weight: 28,
-                id: "863885"
-            },
-            {   
-                key: "2",
-                name: "Food-2" ,
-                ep_date: "11/04/24",
-                quantity: 10,
-                weight: 28,
-                id: "759445"
-            },
-            {
-                key: "3",
-                name: "Food-3" ,
-                ep_date: "01/03/24",
-                quantity: 10,
-                weight: 28,
-                id: "008656"
-            },
-            {
-                key: "4",
-                name: "Food-4" ,
-                ep_date: "15/07/24",
-                quantity: 10,
-                id: "663267"
-            },
-            {
-                key: "5",
-                name: "Food-5" ,
-                ep_date: "04/07/24",
-                quantity: 10,
-                weight: 28,
-                id: "123445"
-            },
-            {
-                key: "6",
-                name: "Food-6" ,
-                ep_date: "28/02/24",
-                quantity: 10,
-                weight: 28,
-                id: "145465"
-            },
-            {
-                key: "7",
-                name: "Food-7" ,
-                ep_date: "20/04/24",
-                quantity: 10,
-                weight: 28,
-                id: "234526"
-            },
-            {
-                key: "8",
-                name: "Food-8" ,
-                ep_date: "01/06/24",
-                quantity: 10,
-                weight: 28,
-                id: "6773445"
-            },
-            {
-                key: "9",
-                name: "Food-9" ,
-                ep_date: "04/07/24",
-                quantity: 10,
-                weight: 28,
-                id: "123445"
-            },
-            {
-                key: "10",
-                name: "Food-10" ,
-                ep_date: "01/06/24",
-                quantity: 10,
-                weight: 28,
-                id: "142345"
-            },
-        ];
-
-        this.notificationDefine();
-        this.setExpDateNotification();
-        this.setTipsNotification();
-    };
-
-    notificationDefine(){
-        Notifications.setNotificationHandler({
-            handleNotification: async () => ({
-              shouldShowAlert: true,
-              shouldPlaySound: true,
-              shouldSetBadge: true,
-            }),
-        });
-    };
-
-    dateChecker (desiredDate){
-        const [day, month, year] = desiredDate.split('/');
-        const targetDate = new Date(`20${year}`, month - 1, day);
-    
-        const currentDate = new Date();
-        const timeDifference = targetDate - currentDate;
-    
-        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-         
-        if(days<30){
-            return false;
-        }else{
-            return true;
-        }
-    };
-    async schedulePushNotification() {
+    async function schedulePushNotification() {
         var nameArr = "";
         const today = new Date();
         
@@ -225,7 +133,7 @@ class MainInterface extends Component {
         const day = today.getDate();
         var tot = day + (month*30) + (year*365);
 
-        this.foods_details.map(food => {
+        foodData.map(food => {
             var dif_day  = parseInt(food.ep_date[0]+food.ep_date[1]);
             var dif_month  = parseInt(food.ep_date[3]+food.ep_date[4]);
             var diff_year  = parseInt("20"+food.ep_date[6]+food.ep_date[7]);
@@ -255,92 +163,117 @@ class MainInterface extends Component {
             });
             var nameArr = "";
         }
-    };
-    setExpDateNotification(){
-        setInterval(()=>{
-            this.schedulePushNotification();
-        }, 43200000)
-    };
-
-    async schedulePushNotification2() {
+    }
+    setInterval(()=>{
+        schedulePushNotification();
+    }, 43200000)
+    
+    async function schedulePushNotification2() {
         const randomNumber = Math.floor(Math.random() * 10) + 1;
         await Notifications.scheduleNotificationAsync({
             content: {
                 title: "FoodFlow",
-                body: `tips:${this.tips[randomNumber]}`,
+                body: `tips:${tips[randomNumber]}`,
             },
             trigger: null,
         });
     };
+    setInterval(()=>{
+        schedulePushNotification2();
+    }, 43200000)
 
-    setTipsNotification(){
-        setInterval(()=>{
-            schedulePushNotification2();
-        }, 43200000)
-    };   
-
-    async componentDidMount() {
-        await this.registerForPushNotificationsAsync().then((token) => {
-            this.setState({ expoPushToken: token });
-            console.log(token);
+    useEffect(() => {
+        registerForPushNotificationsAsync().then(token =>{
+            setExpoPushToken(token)
+            console.log(token)
         });
     
-        this.notificationListener = Notifications.addNotificationReceivedListener(
-            (notification) => {
-                this.setState({ notification });
+        notificationListener.current = Notifications.addNotificationReceivedListener(
+            notification => {
+                setNotification(notification);
             }
         );
     
-        this.responseListener = Notifications.addNotificationResponseReceivedListener(
-            (response) => {
+        responseListener.current = Notifications.addNotificationResponseReceivedListener(
+            response => {
                 console.log(response);
             }
         );
-        await this.loadFonts();
-    }
     
-    componentWillUnmount() {
-        Notifications.removeNotificationSubscription(this.notificationListener);
-        Notifications.removeNotificationSubscription(this.responseListener);
-    }    
+        return () => {
+          Notifications.removeNotificationSubscription(notificationListener.current);
+          Notifications.removeNotificationSubscription(responseListener.current);
+        };
+      }, []);
 
-    async registerForPushNotificationsAsync() {
+    async function registerForPushNotificationsAsync() {
         let token;
         if (Device.isDevice) {
-            const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        
-            let finalStatus = existingStatus;
-            if (existingStatus !== 'granted') {
-                const { status } = await Notifications.requestPermissionsAsync();
-                finalStatus = status;
-            }
-        
-            if (finalStatus !== 'granted') {
-                alert('Failed to get push token for push notification!');
-                return;
-            }
-            token = (await Notifications.getExpoPushTokenAsync()).data;
-            console.log(token);
+          const { status: existingStatus } =await Notifications.getPermissionsAsync();
+
+          let finalStatus = existingStatus;
+          if (existingStatus !== "granted") {
+            const { status } = await Notifications.requestPermissionsAsync();
+            finalStatus = status;
+          }
+
+          if (finalStatus !== "granted") {
+            alert("Failed to get push token for push notification!");
+            return;
+          }
+          token = (await Notifications.getExpoPushTokenAsync()).data;
+          console.log(token);
+
         } else {
-            alert('Must use a physical device for Push Notifications');
+          alert("Must use physical device for Push Notifications");
         }
-    
-        if (Platform.OS === 'android') {
-            Notifications.setNotificationChannelAsync('default', {
-                name: 'default',
-                importance: Notifications.AndroidImportance.MAX,
-                vibrationPattern: [0, 250, 250, 250],
-                sound: true,
-                lightColor: '#FF231F7C',
-                lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-                bypassDnd: true,
-                icon: '../../assets/notificationLogo.png',
-            });
+      
+        if (Platform.OS === "android") {
+          Notifications.setNotificationChannelAsync("default", {
+            name: "default",
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            sound: true,
+            lightColor: "#FF231F7C",
+            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+            bypassDnd: true,
+            icon: "../../assets/notificationLogo.png"
+          });
         }
+      
         return token;
+    }
+
+    let [fontLoaded] = useFonts({
+        "Ubuntu_Regular" : require("../../assets/fonts/Ubuntu/Ubuntu-Regular.ttf"), 
+        "Ubuntu_Medium" : require("../../assets/fonts/Ubuntu/Ubuntu-Medium.ttf"), 
+        "NotoSansKR-VariableFont_wght" : require("../../assets/fonts/Noto_Sans_KR/static/NotoSansKR-Medium.ttf"),
+        "Fredoka" : require("../../assets/fonts/Fredoka/static/Fredoka-Regular.ttf"),
+        "kadamT" : require("../../assets/fonts/KdamThmorPro-Regular.ttf"),
+    });
+
+    const viewMap = ()=>{
+        navigation.navigate("FoodMap");
     };
 
-    async getLocalImageUrl() {
+
+    const onPress = ()=>{
+        //schedulePushNotification();
+        console.log("button pressed!!!");
+    };
+    
+
+    const camOrMan = [
+        {key:'1', value:'By Scanning'},
+        {key:'2', value:'Manually'},
+    ]
+
+    const [value, setValue] = useState(null);
+    const [isFocus, setIsFocus] = useState(false);
+    const [isCamOrMan , setCamOrMan] = useState(null);
+
+
+    const getLocalImageUrl = async () => {
         try {
             const fileName = 'level_7.png';
             const asset = Assets.Asset.fromModule(require(`../../assets/levels/share_level/level_7.jpg`));
@@ -353,20 +286,13 @@ class MainInterface extends Component {
         } catch (error) {
             console.error('Error getting local image URL', error);
         }
-    };
+      };
 
-    viewMap(){
-        this.props.navigation.navigate("FoodMap");
-    };
-
-    onPress() {
-        console.log("button pressed!!!");
-    };
-
-    async badgeShare() {
+    const badgeShare = async ()=>{
         try{
-            const localAssetUri = await this.getLocalImageUrl();
+            const localAssetUri = await getLocalImageUrl();
             Sharing.shareAsync(`file://${localAssetUri}`) //this lib has problem with sharing with caption/title 
+            
             /*
             const title = 'Check out this image!';
             await Share.share({
@@ -379,53 +305,30 @@ class MainInterface extends Component {
         }catch(error){
             console.error('Error sharing file with custom title', error);
         }
-    };
+    }
 
-    renderLabel () {
+    const renderLabel = () => {
         //this part renders when you click over the "search box"
-        if (this.state.value && this.state.isFocus) {
-            return (
-                <Text style={[styles.label, this.state.isFocus && { color: 'blue' }]}>
-                    Searching Food
-                </Text>
-            );
+        if (value && isFocus) {
+          return (
+            <Text style={[styles.label, isFocus && { color: 'blue' }]}>
+              Searching Food
+            </Text>
+          );
         }
         return null;
     };
 
-    async loadFonts() {
-        try {
-            await Font.loadAsync({
-                "Ubuntu_Regular" : require("../../assets/fonts/Ubuntu/Ubuntu-Regular.ttf"), 
-                "Ubuntu_Medium" : require("../../assets/fonts/Ubuntu/Ubuntu-Medium.ttf"), 
-                "NotoSansKR-VariableFont_wght" : require("../../assets/fonts/Noto_Sans_KR/static/NotoSansKR-Medium.ttf"),
-                "Fredoka" : require("../../assets/fonts/Fredoka/static/Fredoka-Regular.ttf"),
-                "kadamT" : require("../../assets/fonts/KdamThmorPro-Regular.ttf"),
-            });
-            this.setState({ fontLoaded: true });
-        } catch (error) {
-            console.error('Error loading fonts', error);
-            this.setState({ fontLoaded: false });
-        }
-    }
-
-    render(){
-        const camOrMan = [
-            {key:'1', value:'By Scanning'},
-            {key:'2', value:'Manually'},
-        ]
-        const { fontLoaded } = this.state;
-
-        if (!fontLoaded){
-            return (
-                <Loader1/>
-            )
-        }else{
+    if (!fontLoaded){
+        return (
+            <Loader1/>
+        )
+    }else{
             return (
                 <View style={styles.container}>
                     <View style= {styles.app_description}>
                         <Text style={styles.inner_app_name_text}>FoodFlow</Text>
-                        <TouchableOpacity style={styles.top_location_button} onPress={()=>{this.viewMap()}}>
+                        <TouchableOpacity style={styles.top_location_button} onPress={viewMap}>
                             <Text style={styles.top_button_txt_inner}>View Location</Text>
                         </TouchableOpacity>
                     </View>
@@ -438,22 +341,22 @@ class MainInterface extends Component {
                             </View>
                             <View style={styles.inner_img_view_top_right_name}>
                                 <View style={styles.upper_info_cont_badge}>
-                                    <TouchableOpacity onPress={()=>{this.badgeShare()}}>
+                                    <TouchableOpacity onPress={badgeShare}>
                                         <Image style={styles.badge_logo}
                                             source={require('../../assets/levels/level_7.png')}
                                         />
                                     </TouchableOpacity>
                                 </View>
                                 <View style={styles.upper_info_cont}>
-                                    <Text style={styles.inner_img_view_top_right_name_text}> Abdurrahman </Text>
+                                    <Text style={styles.inner_img_view_top_right_name_text}> {userNName} </Text>
                                 </View>
                                 <View style={styles.upper_info_cont}>
-                                    <Text style={styles.upper_info_cont_points}> Total Pints: 130 </Text>
+                                    <Text style={styles.upper_info_cont_points}> Total Pints: {points} </Text>
                                 </View>
                             </View>
                         </View>
                         <View style={styles.inner_img_view_bottom}>
-                            <TouchableOpacity style={styles.top_button_left} onPress={()=>{this.onPress()}}>
+                            <TouchableOpacity style={styles.top_button_left} onPress={onPress}>
                                 <Text style={styles.top_button_txt_left}>View Profile</Text>
                             </TouchableOpacity>
                             <View style={styles.canScanOrMan}>
@@ -470,14 +373,25 @@ class MainInterface extends Component {
                                         labelField="value"
                                         valueField="key"
                                         placeholder={"Select Method"}
-                                        value={this.state.value}
+                                        value={value}
                                         onChange={(item) => {
-                                            //setCamOrMan(item.value);
-                                            this.setState({value: item.value})
+                                            setCamOrMan(item.value);
                                             if (item.value == "By Scanning"){
-                                                this.props.navigation.navigate("CamScan")
+                                                navigation.navigate("CamScan", {
+                                                    email: email,
+                                                    phone: phone, 
+                                                    ip: ip, 
+                                                    port: port
+                                                })
                                             }else{
-                                                this.props.navigation.navigate("EnterFoodManually")
+                                                navigation.navigate("EnterFoodManually" , {
+                                                    email: email,
+                                                    phone: phone, 
+                                                    ip: ip , 
+                                                    port: port,
+                                                    points: points,
+                                                    userNName: userNName
+                                                })
                                             }
                                             //console.log(`asdf ${item.value}`)
                                         }}
@@ -486,43 +400,41 @@ class MainInterface extends Component {
                         </View>
                     </View>
                     <View style={styles.containerss}>
-                        {this.renderLabel()}
+                        {renderLabel()}
                         <Dropdown
-                            style={[styles.dropdown, this.state.isFocus && { borderColor: 'blue' }]}
+                            style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
                             containerStyle={styles.dropdownBox_style}
                             placeholderStyle={styles.placeholderStyle}
                             selectedTextStyle={styles.selectedTextStyle}
                             inputSearchStyle={styles.inputSearchStyle}
                             iconStyle={styles.iconStyle}
                             backgroundColor={"rgba(0,0,0,0.3)"}
-                            data={this.foods_details}
+                            data={foodData}
                             search
                             maxHeight={300}
-                            labelField="name"
-                            valueField="key"
-                            placeholder={!(this.state.isFocus) ? 'Search/Select Food' : '...'}
+                            labelField="food_name"
+                            valueField="identifier_key"
+                            placeholder={!isFocus ? 'Search/Select Food' : '...'}
                             searchPlaceholder="Search..."
-                            value={this.state.value}
-                            onFocus={() => {
-                                this.setState({
-                                    isFocus : true
-                                })
-                            }}
-                            onBlur={() => {
-                                this.setState({
-                                    isFocus : false
-                                })
-                            }}
+                            onFocus={() => setIsFocus(true)}
+                            onBlur={() => setIsFocus(false)}
                             onChange={(item) => {
-                                this.setState({ value : item.name })
-                                this.setState({ isFocus : false })
-                                this.props.navigation.navigate("EditFoodInfo" , {
-                                    nameIntFace: item.name,
-                                    idIntFace: item.id,
-                                    expDateIntFace: item.ep_date,
+                                setValue(item.food_name);
+                                console.log(`asdf ${item.food_name}`)
+                                setIsFocus(false);
+                                navigation.navigate("EditFoodInfo" , {
+                                    nameIntFace: item.food_name,
+                                    idIntFace: item.food_id,
+                                    expDateIntFace: item.expDate,
                                     quantityIntFace: item.quantity,
                                     weightIntFace: item.weight,
-                                    keyIntFace: item.key
+                                    keyIntFace: item.identifier_key, 
+                                    email: email,
+                                    phone: phone,
+                                    ip: ip, 
+                                    port: port,
+                                    points: points,
+                                    userNName: userNName
                                 })
                             }}
                             onChangeText = {(search)=>{
@@ -532,17 +444,24 @@ class MainInterface extends Component {
                         />
                     </View>
                     <ScrollView style= {styles.inner_product_view}>
-                        {this.foods_details.map((item, index)=>(
-                            <FoodComponent key={item.key} keys={item.key} food_name={item.name} exp_date={item.ep_date} food_id={item.id} weight={item.weight} quantity={item.quantity} navigation={this.props.navigation} bgColor={this.dateChecker(item.ep_date)? "#719A70":"#f00"}/>
-                        ))}
+                        {
+                            foodData.map((item, index)=>{
+                                //console.log(item)
+                                if (item.identifier_key == 0){
+                                    return ;
+                                }else{
+                                    return (
+                                        <Food_component key={item.identifier_key} keys={item.identifier_key} food_name={item.food_name} exp_date={item.expDate} food_id={item.food_id} weight={item.weight} quantity={item.quantity} navigation={navigation} bgColor={dateChecker(item.expDate)? "#719A70":"#f00"} email={email} phone={phone} ip={ip} port={port} points={points} userNName={userNName}/>
+                                    )
+                                }
+                            })
+                        }
                     </ScrollView>
                 </View>
             )
-        }
     }
-
 }
-  
+
 const styles = StyleSheet.create({
     container: {
         display: "flex", 
@@ -731,7 +650,8 @@ const styles = StyleSheet.create({
     reusable_left:{
         display :"flex",
         justifyContent: "center",
-        alignItems:"flex-start"
+        alignItems:"flex-start", 
+        width: 180
     }, 
     reusable_left_txt:{
         fontFamily: "Ubuntu_Regular",

@@ -90,33 +90,50 @@ router.post("/register" , (req , res)=>{
         };
 
         //save user in Database
-        var sql_reg_commands = `INSERT INTO USER_INFO VALUES("${name}", "${user_name}", "${user_password}", "${email}", "${phone_number}")` ; 
+        var sql_reg_commands = `INSERT INTO USER_INFO VALUES("${name}", "${user_name}", "${user_password}", "${email}", "${phone_number}", 0)` ; 
         connectDB.queryObject(sql_reg_commands ,(error, result) => {
             if (error) {
-                console.error(error);
+                //console.error(error);
                 res.status(201).send({
                     success: false, 
                     message: "registration failed, please try again later!!!"
                 })
             } else {
-                console.log(result);
+                //console.log(result);
                 if(result == true){
                     //making table for each user base on the name of user "user"
-                    var creating_table_command = `CREATE TABLE IF NOT EXISTS ${user_name} (identifier_key INT NOT NULL , food_name VARCHAR (50) NOT NULL , food_id INT NOT NULL, quantity INT NOT NULL , weight INT NOT NULL, expDate VARCHAR (8) NOT NULL , UNIQUE (food_id , identifier_key), PRIMARY KEY (food_id , identifier_key))` ; 
+                    var creating_table_command = `CREATE TABLE IF NOT EXISTS ${user_name} (identifier_key INT NOT NULL , food_name VARCHAR (100) NOT NULL , food_id VARCHAR (100) NOT NULL, quantity INT NOT NULL , weight INT NOT NULL, expDate VARCHAR (8) NOT NULL , UNIQUE (food_id, identifier_key), PRIMARY KEY (identifier_key))` ; 
                     connectDB.queryObject(creating_table_command ,(error1, result1) => {
                         if (error1) {
-                            console.error(error1);
+                           // console.error(error1);
                             res.status(201).send({
                                 success: false, 
                                 message: "user registration done , but failed to create a storage table for user!!! "
                             })
                         }else{
-                            console.log(result1);
+                            //console.log(result1);
                             if(result1 == true){
-                                res.status(201).send({
-                                    success: true, 
-                                    message: "registration successful , all done!!!"
-                                });
+                                const first_sql_entry = `INSERT INTO ${user_name} VALUES(0, "Please enter food below", -1, -1, -1, "30/12/99")` ; 
+                                connectDB.queryObject(first_sql_entry ,(error2, result2) => {
+                                    if(error2){
+                                        res.status(201).send({
+                                            success: false, 
+                                            message: "error occured while input 1st have of user table 1 !!!"
+                                        })
+                                    }else{
+                                        if(result2 == true){
+                                            res.status(201).send({
+                                                success: true, 
+                                                message: "registration successful , all done!!!"
+                                            });
+                                        }else{
+                                            res.status(201).send({
+                                                success: false, 
+                                                message: "error occured while input 1st have of user table 2 !!!"
+                                            })
+                                        }
+                                    }
+                                })
                             }else if (result1 == false){
                                 res.status(201).send({
                                     success: false, 
