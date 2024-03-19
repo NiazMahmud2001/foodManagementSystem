@@ -52,9 +52,8 @@ router.post("/loginMail" , (req , res)=>{
         };
 
         // communicate with database 
-        var sql_loginEmail_commands = `SELECT user_password, email FROM USER_INFO WHERE user_password='${user_password}' AND email='${email}'` ; 
-        
-        connectDB.queryObject(sql_loginEmail_commands ,(error, result) => {
+        const sql_loginEmail_commands = `SELECT points, user_name FROM USER_INFO WHERE user_password='${user_password}' AND email='${email}'` ; 
+        connectDB.volQueryObject(sql_loginEmail_commands ,(error, result, data) => {
             if (error) {
                 console.error(error);
                 res.status(201).send({
@@ -62,11 +61,11 @@ router.post("/loginMail" , (req , res)=>{
                     message: "login failed, you may not registered yet!!!"
                 })
             } else {
-                console.log(result);
+                //console.log(result, data[0].points, data[0].user);
                 if(result == true){
                     res.status(201).send({
                         success: true, 
-                        message: "login successful"
+                        message: data[0]
                     });
                 }else{
                     res.status(201).send({
