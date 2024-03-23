@@ -30,9 +30,9 @@ const windowHeight = Dimensions.get('window').height;
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
     }),
 });
 
@@ -145,6 +145,8 @@ const MainInterface = ({navigation , route}) => {
     const [notification, setNotification] = useState(false);
     const notificationListener = useRef();
     const responseListener = useRef();
+
+
     const {email} = route.params
     const {phone} = route.params
     const {ip} = route.params
@@ -215,76 +217,88 @@ const MainInterface = ({navigation , route}) => {
     setInterval(()=>{
         schedulePushNotification();
     }, 43200000)
-    
-    async function schedulePushNotification2() {
-        const randomNumber = Math.floor(Math.random() * 10) + 1;
-        await Notifications.scheduleNotificationAsync({
-            content: {
-                title: "FoodFlow",
-                body: `tips:${tips[randomNumber]}`,
-            },
-            trigger: null,
-        });
-    };
-    setInterval(()=>{
-        schedulePushNotification2();
-    }, 43200000)
 
+    async function schedulePushNotification2() {
+        var foodFetch_tips= `http://${ip}:${port}/api/auth/tips/send/trigger/sendTipsApi`;
+        const {data} = await axios.post(
+            foodFetch_tips , 
+            {
+                tips: true
+            }
+        )
+        if(data.success){
+            console.log(data.message.tipType)
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: "FoodFlow",
+                    body: data.message.tipType,
+                },
+                trigger: { seconds: 1 },
+            });
+        }
+    };
+    setInterval(async ()=>{
+        await schedulePushNotification2();
+    }, 43200000)
+    //60000
+
+    
     useEffect(() => {
-        registerForPushNotificationsAsync().then(token =>{
-            setExpoPushToken(token)
-            console.log(token)
-        });
-        notificationListener.current = Notifications.addNotificationReceivedListener(
-            notification => {
-                setNotification(notification);
-            }
-        );
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(
-            response => {
-                console.log(response);
-            }
-        );
-        return () => {
-          Notifications.removeNotificationSubscription(notificationListener.current);
-          Notifications.removeNotificationSubscription(responseListener.current);
-        };
+            registerForPushNotificationsAsync().then(token =>{
+                setExpoPushToken(token)
+                //console.log(token)
+            });
+            notificationListener.current = Notifications.addNotificationReceivedListener(
+                notification => {
+                    setNotification(notification);
+                }
+            );
+            responseListener.current = Notifications.addNotificationResponseReceivedListener(
+                response => {
+                    console.log(response);
+                }
+            );
+            return () => {
+            Notifications.removeNotificationSubscription(notificationListener.current);
+            Notifications.removeNotificationSubscription(responseListener.current);
+            };
       }, []);
 
     async function registerForPushNotificationsAsync() {
-        let token;
-        if (Device.isDevice) {
-          const { status: existingStatus } =await Notifications.getPermissionsAsync();
+            //register and generate token for my machine to send and receive notification
+            let token;
+            if (Device.isDevice) {
+            const { status: existingStatus } =await Notifications.getPermissionsAsync();
 
-          let finalStatus = existingStatus;
-          if (existingStatus !== "granted") {
-            const { status } = await Notifications.requestPermissionsAsync();
-            finalStatus = status;
-          }
-          if (finalStatus !== "granted") {
-            alert("Failed to get push token for push notification!");
-            return;
-          }
-          token = (await Notifications.getExpoPushTokenAsync()).data;
-          console.log(token);
+            let finalStatus = existingStatus;
+            if (existingStatus !== "granted") {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+            if (finalStatus !== "granted") {
+                alert("Failed to get push token for push notification!");
+                return;
+            }
+            token = (await Notifications.getExpoPushTokenAsync()).data;
+            console.log(token);
 
-        } else {
-          alert("Must use physical device for Push Notifications");
-        }
-        if (Platform.OS === "android") {
-          Notifications.setNotificationChannelAsync("default", {
-            name: "default",
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            sound: true,
-            lightColor: "#FF231F7C",
-            lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-            bypassDnd: true,
-            icon: "../../assets/notificationLogo.png"
-          });
-        }
-      
-        return token;
+            } else {
+            alert("Must use physical device for Push Notifications");
+            }
+            if (Platform.OS === "android") {
+            Notifications.setNotificationChannelAsync("default", {
+                name: "default",
+                importance: Notifications.AndroidImportance.MAX,
+                vibrationPattern: [0, 250, 250, 250],
+                sound: true,
+                lightColor: "#FF231F7C",
+                lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+                bypassDnd: true,
+                icon: "../../assets/notificationLogo.png"
+            });
+            }
+        
+            return token;
     }
 
     let [fontLoaded] = useFonts({
@@ -296,7 +310,15 @@ const MainInterface = ({navigation , route}) => {
     });
 
     const viewMap = ()=>{
-        navigation.navigate("FoodMap");
+        navigation.navigate("FoodMap",{
+            email: email,
+            phone: phone, 
+            ip: ip, 
+            port: port,
+            foodData:foodData,
+            points: points,
+            userNName: userNName
+        });
     };
 
 
