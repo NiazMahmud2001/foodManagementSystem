@@ -21,8 +21,8 @@ const Login = ({navigation , route}) => {
     const [loading, setLoading] = useState(false)
     const [value, setValue] = useState();
 
-    //var ip = "192.168.70.35";
-    var ip = "172.29.22.18";
+    var ip = "192.168.70.35";
+    //var ip = "172.29.22.18";
     //var ip = "172.29.45.90";
     var port = "9090"
 
