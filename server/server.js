@@ -24,6 +24,8 @@ app.use("/api/auth/fetch/food/allFood" , require("./models/food_model/fetch_food
 app.use("/api/auth/fetch/foodEdit/edit_foods" , require("./models/food_model/editFood/editFood"));
 app.use("/api/volunteer/update/points/onReq" , require("./models/Vol_process/vol_process"));
 app.use("/api/auth/delete/food/api/deleteFood" , require("./models/food_model/deleteFood/deleteFood"));
+app.use("/api/auth/verify/mail" , require("./models/mailVerification/VerificarionMail"));
+app.use("/api/auth/usrInfo/fetch" , require("./models/fechUserInfo/FetchInfo"));
 
 
 //PORT 

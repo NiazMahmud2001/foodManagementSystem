@@ -12,6 +12,8 @@ import EnterFoodWithBarCode from "./screens/scanFood/enterFoodManually/EnterFood
 import EditFoodInfo from "./screens/EditFoodInfo/EditFoodInfo";
 import Loader1 from './screens/loader/Loader1';
 import VolInterface from "./screens/VolMainInterface/VolInterface"
+import EmailVerification from "./screens/emailVerification/EmailVerification"
+import UserProfile from "./screens/userProfile/UserProfile"
 
 import MainInterface from "./screens/userInterface/MainInterface" ;
 import { EntryExitTransition } from 'react-native-reanimated';
@@ -34,64 +36,73 @@ export default function App() {
   return (
     <NavigationContainer>
       <stack.Navigator initialRouteName='Login'>
-          <stack.Screen 
-            name='Register' 
-            component={Register} 
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="Login" 
-            component={Login} 
-            options={{headerShown:false}}
-          />
-          <stack.Screen 
-            name="LoginPhone"
-            component={LoginPhone}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="MainInterface"
-            component={MainInterface}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="FoodMap"
-            component={FoodMap}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="CamScan"
-            component={CamScan}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="EnterFoodManually"
-            component={EnterFoodManually}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="EnterFoodWithBarCode"
-            component={EnterFoodWithBarCode}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="EditFoodInfo"
-            component={EditFoodInfo}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="Loader1"
-            component={Loader1}
-            options={{headerShown:false}}
-          />
-          <stack.Screen
-            name="VolInterface"
-            component={VolInterface}
-            options={{headerShown:false}}
-          />
+            <stack.Screen 
+              name='Register' 
+              component={Register} 
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="Login" 
+              component={Login} 
+              options={{headerShown:false}}
+            />
+            <stack.Screen 
+              name="LoginPhone"
+              component={LoginPhone}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="MainInterface"
+              component={MainInterface}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="FoodMap"
+              component={FoodMap}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="CamScan"
+              component={CamScan}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="EnterFoodManually"
+              component={EnterFoodManually}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="EnterFoodWithBarCode"
+              component={EnterFoodWithBarCode}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="EditFoodInfo"
+              component={EditFoodInfo}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="Loader1"
+              component={Loader1}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="VolInterface"
+              component={VolInterface}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="EmailVerification"
+              component={EmailVerification}
+              options={{headerShown:false}}
+            />
+            <stack.Screen
+              name="UserProfile"
+              component={UserProfile}
+              options={{headerShown:false}}
+            />
       </stack.Navigator>
     </NavigationContainer>
-    
   );
 }
 

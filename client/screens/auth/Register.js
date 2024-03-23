@@ -26,13 +26,10 @@ const Register = ({navigation, route}) => {
             setLoading(true);
             console.log("Register Data==> ", { name, email, password });
             try{
-                var reg_url = `http://${ip}:9090/api/auth/reg/user/register`;
+                var reg_url = `http://${ip}:9090/api/auth/verify/mail/verifyMailDegit`;
                 const {data} = await axios.post(
                     reg_url , 
                     {
-                        name: name,
-                        user_name : userName,
-                        user_password: password,
                         email: email, 
                         phone_number: phoneNumber
                     }
@@ -40,14 +37,23 @@ const Register = ({navigation, route}) => {
                 //console.log(data.message)
                 console.log(data.success)
                 if(data.success){
-                    navigation.navigate("Login")
+                    //navigation.navigate("Login")
+                    navigation.navigate("EmailVerification",{
+                        name: name,
+                        user_name : userName,
+                        user_password: password,
+                        email: email, 
+                        phone_number: phoneNumber,
+                        ip: ip,
+                        veriCode: data.message
+                    })
                 }else{
                     Alert.alert(data.message)
                 }
             }catch(error){
                 Alert.alert(error.response.data.message)
                 console.log(error.response.data.message)
-                console.log("user failed to register from front end!!!")
+                console.log("user failed to register from front ends!!!")
             }
             setLoading(false)
         }

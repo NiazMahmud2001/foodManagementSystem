@@ -6,7 +6,8 @@ import {
     Image , 
     ScrollView,
     Platform, 
-    Share
+    Share,
+    Alert
 } from 'react-native';
 import React, { useState, useEffect, useRef } from "react";
 import {Dimensions} from 'react-native';
@@ -17,6 +18,7 @@ import * as Notifications from 'expo-notifications';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as Assets from 'expo-asset';
+import axios from "axios";
 
 import { Dropdown } from 'react-native-element-dropdown'; //for drop down-box
 
@@ -33,7 +35,6 @@ Notifications.setNotificationHandler({
       shouldSetBadge: true,
     }),
 });
-
 
 const Food_component = props =>{
     return (
@@ -75,6 +76,53 @@ const Food_component = props =>{
     );
 };
 
+const ImgComponent = props =>{
+
+    if(props.point < 500 && props.point>=0){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_1.png`)}
+            />
+        )
+    }else if(props.point < 1000 && props.point>=500){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_2.png`)}
+            />
+        )
+    }else if(props.point < 1500 && props.point>=1000){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_3.png`)}
+            />
+        )
+    }else if(props.point <2000 && props.point>=1500){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_4.png`)}
+            />
+        )
+    }else if(props.point <2500 && props.point>=2000){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_5.png`)}
+            />
+        )
+    }else if(props.point <3000 && props.point>=2500){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_6.png`)}
+            />
+        )
+    }else if(props.point>=3000){
+        return(
+            <Image style={styles.badge_logo}
+                source={require(`../../assets/levels/level_7.png`)}
+            />
+        )
+    }
+}
+
 const dateChecker = (desiredDate)=>{
     const [day, month, year] = desiredDate.split('/');
     const targetDate = new Date(`20${year}`, month - 1, day);
@@ -83,7 +131,7 @@ const dateChecker = (desiredDate)=>{
     const timeDifference = targetDate - currentDate;
 
     const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-     
+    
     if(days<30){
         return false;
     }else{
@@ -187,19 +235,16 @@ const MainInterface = ({navigation , route}) => {
             setExpoPushToken(token)
             console.log(token)
         });
-    
         notificationListener.current = Notifications.addNotificationReceivedListener(
             notification => {
                 setNotification(notification);
             }
         );
-    
         responseListener.current = Notifications.addNotificationResponseReceivedListener(
             response => {
                 console.log(response);
             }
         );
-    
         return () => {
           Notifications.removeNotificationSubscription(notificationListener.current);
           Notifications.removeNotificationSubscription(responseListener.current);
@@ -216,7 +261,6 @@ const MainInterface = ({navigation , route}) => {
             const { status } = await Notifications.requestPermissionsAsync();
             finalStatus = status;
           }
-
           if (finalStatus !== "granted") {
             alert("Failed to get push token for push notification!");
             return;
@@ -227,7 +271,6 @@ const MainInterface = ({navigation , route}) => {
         } else {
           alert("Must use physical device for Push Notifications");
         }
-      
         if (Platform.OS === "android") {
           Notifications.setNotificationChannelAsync("default", {
             name: "default",
@@ -257,9 +300,30 @@ const MainInterface = ({navigation , route}) => {
     };
 
 
-    const onPress = ()=>{
+    const onPressProfile = async ()=>{
         //schedulePushNotification();
         console.log("button pressed!!!");
+        var fetchUrl = `http://${ip}:${port}/api/auth/usrInfo/fetch/fetchUseData`;
+        const {data} = await axios.post(
+            fetchUrl , 
+            {
+                userNName: userNName
+            }
+        );
+        console.log(data.message.cus_name)
+        if(data.success){
+            navigation.navigate("UserProfile" , {
+                cus_name: data.message.cus_name,
+                email: data.message.email,
+                phone_number: data.message.phone_number,
+                points: data.message.points,
+                user_name: data.message.user_name,
+                usr_password: data.message.user_password
+            })
+        }else{
+            Alert.alert("User information can not be fetched in this moment!!!")
+        }
+
     };
     
 
@@ -336,15 +400,13 @@ const MainInterface = ({navigation , route}) => {
                         <View style={styles.inner_img_view_top}>
                             <View style={styles.inner_img_view_top_left_img}>
                                 <Image style={styles.tinyLogo}
-                                    source={require('../../assets/men_pic.jpg')}
+                                    source={require('../../assets/man222.png')}
                                 />
                             </View>
                             <View style={styles.inner_img_view_top_right_name}>
                                 <View style={styles.upper_info_cont_badge}>
                                     <TouchableOpacity onPress={badgeShare}>
-                                        <Image style={styles.badge_logo}
-                                            source={require('../../assets/levels/level_7.png')}
-                                        />
+                                        {<ImgComponent point={points}/>}
                                     </TouchableOpacity>
                                 </View>
                                 <View style={styles.upper_info_cont}>
@@ -356,7 +418,7 @@ const MainInterface = ({navigation , route}) => {
                             </View>
                         </View>
                         <View style={styles.inner_img_view_bottom}>
-                            <TouchableOpacity style={styles.top_button_left} onPress={onPress}>
+                            <TouchableOpacity style={styles.top_button_left} onPress={onPressProfile}>
                                 <Text style={styles.top_button_txt_left}>View Profile</Text>
                             </TouchableOpacity>
                             <View style={styles.canScanOrMan}>

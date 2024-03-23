@@ -56,7 +56,7 @@ router.post("/loginMail" , (req , res)=>{
         connectDB.volQueryObject(sql_loginEmail_commands ,(error, result, data) => {
             if (error) {
                 console.error(error);
-                res.status(201).send({
+                res.status(401).send({
                     success: false, 
                     message: "login failed, you may not registered yet!!!"
                 })
@@ -68,7 +68,7 @@ router.post("/loginMail" , (req , res)=>{
                         message: data[0]
                     });
                 }else{
-                    res.status(201).send({
+                    res.status(401).send({
                         success: false, 
                         message: "login failed, you may not registered yet!!!"
                     })
