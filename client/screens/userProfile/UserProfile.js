@@ -2,12 +2,13 @@ import {
     StyleSheet,
     View, 
     Text, 
-    Image , 
+    Image ,
+    TouchableOpacity,
 } from 'react-native';
 import {Dimensions} from 'react-native'
 import React from 'react';
 import Loader1 from "../loader/Loader1"
-
+import { useNavigation } from '@react-navigation/native';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -19,12 +20,19 @@ const UserProfile = ({navigation , route}) => {
     const {user_name} = route.params
     const {usr_password} = route.params
 
+    const logOut = ()=>{
+        navigation.replace("Login")
+    }
+
 
     return (
         <View style={styles.container}>
             <View  style={styles.subContainer}>
                     <View style= {styles.app_description}>
                         <Text style={styles.inner_app_name_text}>FoodFlow</Text>
+                        <TouchableOpacity style={styles.top_location_button} onPress={logOut}>
+                            <Text style={styles.top_button_txt_inner}>Log Out</Text>
+                        </TouchableOpacity>
                     </View>
                     <View style= {{width: windowWidth, height: "80%" , display: "flex", justifyContent: "center", alignItems:"center"}}>
                         <View style= {styles.inner_img_view}>
@@ -60,15 +68,35 @@ var styles = StyleSheet.create({
         height: windowHeight/3,
     },
     app_description:{
-        width: windowWidth,
+        width: windowWidth-45,
         height: windowHeight/13,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems:"center",
+        flexDirection: "row",
+        marginLeft: 20,
+        marginRight: 20,
     },
     inner_app_name_text:{
         fontSize: 30,
         color: "black",
         zIndex: 1000,
-        marginTop: 12,
-        marginLeft: 10
+    },
+    top_location_button:{
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        padding: 10,
+        width: 100, 
+        height:50,
+        borderRadius: 5,
+        shadowColor: "#000",
+        shadowOffset: {
+	        width: 2,
+	        height: 2,
+        },
+        shadowOpacity: 1,
+        shadowRadius: 3,
+        elevation: 7,
     },
     inner_img_view:{
         display: "flex",

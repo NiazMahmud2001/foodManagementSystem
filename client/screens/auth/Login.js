@@ -59,7 +59,7 @@ const Login = ({navigation , route}) => {
                         )
                         //console.log("data got1: " ,data.message)
                         if(data.success){
-                            navigation.navigate("MainInterface",{
+                            navigation.replace("MainInterface",{
                                 email: email,
                                 phone: "fromMail", 
                                 ip: ip, 
@@ -88,7 +88,7 @@ const Login = ({navigation , route}) => {
                     console.log("status of login: ", data)
                     if(data.success){
                         //console.log(data.volID , data.orgName)
-                        navigation.navigate("VolInterface", {
+                        navigation.replace("VolInterface", {
                             volId: data.volID,
                             orgName: data.orgName, 
                             ip: ip, 

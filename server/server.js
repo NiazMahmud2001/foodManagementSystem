@@ -26,6 +26,7 @@ app.use("/api/volunteer/update/points/onReq" , require("./models/Vol_process/vol
 app.use("/api/auth/delete/food/api/deleteFood" , require("./models/food_model/deleteFood/deleteFood"));
 app.use("/api/auth/verify/mail" , require("./models/mailVerification/VerificarionMail"));
 app.use("/api/auth/usrInfo/fetch" , require("./models/fechUserInfo/FetchInfo"));
+app.use("/api/auth/tips/send/trigger" , require("./models/tipsNotification/Tips"));
 
 
 //PORT 

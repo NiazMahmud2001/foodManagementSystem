@@ -10,7 +10,14 @@ import Loader1 from '../loader/Loader1';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const FoodMap = ({navigation}) => {
+const FoodMap = ({navigation , route}) => {
+    const {email} = route.params
+    const {phone} = route.params
+    const {ip} = route.params
+    const {port} = route.params
+    const {points} = route.params
+    const {userNName} = route.params
+    var {foodData} = route.params
 
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState("not_yet");
@@ -19,16 +26,31 @@ const FoodMap = ({navigation}) => {
 
     useEffect(() => {
         (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            setErrorMsg("access_denied")
-        }else{
-            setErrorMsg("access_granted")
-        }
-
-        let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-        let locations = await Location.getCurrentPositionAsync();
-        setLocation(location);
+            try{
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                console.log("status: ", status)
+                if (status == 'granted') {
+                    console.log("granted")
+                    setErrorMsg("access_granted");
+                }else{
+                    console.log("denied")
+                    setErrorMsg("access_denied")
+                }
+    
+                let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+                let locations = await Location.getCurrentPositionAsync();
+                setLocation(location);
+            }catch(error){
+                navigation.navigate("MainInterface" , {
+                    email: email,
+                    phone: phone, 
+                    ip: ip, 
+                    port: port,
+                    foodData: foodData,
+                    points: points,
+                    userNName: userNName
+                })
+            }
         })();
     }, []);
 
@@ -249,7 +271,7 @@ const FoodMap = ({navigation}) => {
      }else if(errorMsg=="access_denied"){
         return (
             <View style={styles.container}>
-                <Text>Access denied!!!</Text>
+                <Text>Location Access Denied!!!</Text>
             </View>
         )
      }else{
