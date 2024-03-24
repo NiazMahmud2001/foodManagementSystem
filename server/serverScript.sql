@@ -1,4 +1,5 @@
-# drop database if exists test_database;
+alter user 'root'@'localhost' identified with mysql_native_password by '908070';
+#drop database if exists test_database;
 CREATE DATABASE IF NOT EXISTS test_database;
 USE test_database ;
 
@@ -8,6 +9,7 @@ CREATE TABLE IF NOT EXISTS USER_INFO (
     user_password VARCHAR(10) NOT NULL,
     email VARCHAR(50) NOT NULL,
     phone_number VARCHAR(13) NOT NULL,
+    points INT NOT NULL,
 	PRIMARY KEY (email, phone_number, cus_name), 
     unique(email, phone_number, user_name)
 );
@@ -29,9 +31,9 @@ select * from USER_INFO;
 #drop table USER_INFO;
 #drop table VOLUNTEER_INFO;
 
-INSERT INTO VOLUNTEER_INFO VALUES("Abdurrahman" , "ABD1122", "123abc", "abdurrahman@gmail.com", "+971521809001" , "11@abc" , "Sharjah" , "AUS");
-INSERT INTO VOLUNTEER_INFO VALUES("AbdlAziz" , "Aziz1214", "1asc@123", "aziz01944@gmail.com", "+971521809005" , "11@abc" , "Dubai" , "UOS");
-#select * from VOLUNTEER_INFO;
+#INSERT INTO VOLUNTEER_INFO VALUES("Abdurrahman" , "ABD1122", "123abc", "abdurrahman@gmail.com", "+971521809001" , "11@abc" , "Sharjah" , "AUS");
+#INSERT INTO VOLUNTEER_INFO VALUES("AbdlAziz" , "Aziz1214", "1asc@123", "aziz01944@gmail.com", "+971521809005" , "11@abc" , "Dubai" , "UOS");
+select * from VOLUNTEER_INFO;
 
 
 
