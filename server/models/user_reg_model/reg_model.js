@@ -12,7 +12,8 @@ router.post("/register" , (req , res)=>{
     try{
         //get request from user
         const {name, user_name, user_password, email, phone_number} = req.body; 
-
+        console.log(name, user_name, user_password, email, phone_number);
+        
         //mysql connection
         var connectDB = new DatabaseObj();
         connectDB.createConnection();
@@ -93,7 +94,7 @@ router.post("/register" , (req , res)=>{
         var sql_reg_commands = `INSERT INTO USER_INFO VALUES("${name}", "${user_name}", "${user_password}", "${email}", "${phone_number}", 0)` ; 
         connectDB.queryObject(sql_reg_commands ,(error, result) => {
             if (error) {
-                //console.error(error);
+                console.error(error);
                 res.status(201).send({
                     success: false, 
                     message: "registration failed, please try again later!!!"
