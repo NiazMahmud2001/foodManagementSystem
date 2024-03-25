@@ -72,8 +72,13 @@ const LoginPhone = ({navigation , route}) => {
     };
     return (
     <View style={styles.container}>
-        <ImageBackground  blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
-            <BlurView intensity={0} tint="light" style={styles.inner_design}>
+            <View style={styles.txtImg_design_1}>
+                <Image style={styles.logoImg} source={require('../../assets/man22.png')}/>
+                <View style={styles.text_designTop}>
+                    <Text style={styles.text_design}>FoodFlow</Text>
+                </View>
+            </View>
+            <BlurView intensity={10} tint="dark" style={styles.inner_design}>
                 <Text style={styles.pageTitle}>Login</Text>
                 <View style = {{marginHorizontal: 20}}>
         
@@ -109,52 +114,56 @@ const LoginPhone = ({navigation , route}) => {
                             {/*this loading is useState*/}
                         </Text>
                     </TouchableOpacity>
-        
-                    <Text 
-                        style={styles.linkText} 
-                        onPress={()=>{
+
+                    <View style={styles.bottomButtonCont}>
+                        <TouchableOpacity style={styles.submitBtnBottomTxt} onPress={()=>{
                             navigation.navigate("Login" , {
                                 ip:ip
                             })
-                        }}
-                    >
-                        Login With Email
-                    </Text>
-                    <Text 
-                        style={styles.linkText} 
-                        onPress={()=>{
+                        }}>
+                            <Text style={styles.linkText}> Login Email </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.submitBtnBottomTxt} onPress={()=>{
                             navigation.navigate("Register", {
                                 ip: ip, 
                                 port: port
                             })
-                        }}
-                    >
-                        Sign Up
-                    </Text>
-        
+                        }}>
+                            <Text style={styles.linkText}> Sign Up </Text>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
             </BlurView>
-            <Text style={styles.text_design}>FoodFlow</Text>
-        </ImageBackground>
     </View>
   )
 }
 
 var styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: "center", 
-        backgroundColor: "#e1d5c9",
-    },
-    image_design_1:{
-        resizeMode: "cover", //cover , contain , stretch, 
-        width: windowWidth,  
-        height: windowHeight,
         display: "flex",
+        alignItems: "center",
         flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center"
+        width: windowWidth,
+        height: windowHeight,
+        backgroundColor:"#FAFAFA",
     },
+    txtImg_design_1:{
+        //background image 
+        resizeMode: "cover", //cover , contain , stretch, 
+        display:"flex",
+        justifyContent:"flex-start",
+        alignItems:"flex-start",
+        flexDirection:"row",
+        width: windowWidth,
+        height:190
+    },
+    logoImg:{
+        width: 70,
+        height:70,
+        marginTop:20,
+        marginLeft:5
+    }, 
     inner_design:{
         width: windowWidth-50,  
         height: windowHeight/1.9,
@@ -187,6 +196,22 @@ var styles = StyleSheet.create({
         borderBottom: 20,
         justifyContent: "center"
     },
+    bottomButtonCont:{
+        display:"flex",
+        justifyContent:"space-between",
+        alignItems:"center",
+        flexDirection:"row",
+        marginTop:30,
+    },
+    submitBtnBottomTxt:{
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"row",
+        backgroundColor:"#009c10",
+        width: 120, 
+        borderRadius: 10
+    },
     btnText: {
         color: "#fff",
         textAlign: "center",
@@ -195,23 +220,27 @@ var styles = StyleSheet.create({
     },
     linkText: {
         backgroundColor: "transparent",
-        width: "100%", 
-        marginTop: 20,
         fontSize: 15, 
-        justifyContent: "center", 
+        height : 40,
+        width: 100,
         textAlign: "center",
-        textDecorationLine: "underline",
-        textDecorationColor: "#000",
+        paddingTop: 7,
     },
     text_design:{
-        fontSize: 20,
+        fontSize: 21,
         textDecorationStyle: "solid",
-        textDecorationLine:'underline' ,
         color: '#000000',
         letterSpacing: 2,
-        paddingTop: 70,
         fontWeight:"bold",
-    }
+    },
+    text_designTop:{
+        height: 120,
+        width: 150,
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"row",
+    },
 })
 
 

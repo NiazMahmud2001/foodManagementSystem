@@ -60,8 +60,13 @@ const Register = ({navigation, route}) => {
     };
     return (
     <View style={styles.container}>
-        <ImageBackground  blurRadius={1} source={require("../../assets/man2.png")} style={styles.image_design_1}>
-            <BlurView intensity={0} tint="light" style={styles.inner_design}>
+            <View style={styles.txtImg_design_1}>
+                <Image style={styles.logoImg} source={require('../../assets/man22.png')}/>
+                <View style={styles.text_designTop}>
+                    <Text style={styles.text_design}>FoodFlow</Text>
+                </View>
+            </View>
+            <BlurView intensity={10} tint="dark" style={styles.inner_design}>
                 <Text style={styles.pageTitle}>Register</Text>
                 <View style = {{marginHorizontal: 20}}>
         
@@ -132,33 +137,57 @@ const Register = ({navigation, route}) => {
                             {/*this loading is useState*/}
                         </Text>
                     </TouchableOpacity>
-        
-                    <Text style={styles.linkText}>
-                        Already Registered Please 
-                        <Text 
-                            style={styles.loginLink} 
-                            onPress={()=>{
-                                navigation.navigate("Login",{
-                                    ip: ip
-                                })
-                            }}
-                        > 
-                            {"  "}LOGIN 
+                    
+                    <View style={{display: "flex" ,flexDirection:"row" , width: windowWidth-100 , marginTop: 25, marginBottom:20}}>
+                        <Text style={styles.linkText}>
+                            Already Registered Please
                         </Text>
-                    </Text>
-                </View>
+                        <TouchableOpacity style={styles.submitBtnBottomTxt} onPress={()=>{
+                            navigation.navigate("Login",{
+                                ip: ip
+                            })
+                        }}>
+                            <Text style={styles.linkTexts}> Login </Text>
+                        </TouchableOpacity> 
+                    </View>
+                </View> 
             </BlurView>
-            <Text style={styles.text_design}>FoodFlow</Text>
-        </ImageBackground>
     </View>
   )
 }
 
 var styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: "center", 
-        backgroundColor: "#e1d5c9",
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+        width: windowWidth,
+        height: windowHeight,
+        backgroundColor:"#FAFAFA",
+    },
+    txtImg_design_1:{
+        //background image 
+        resizeMode: "cover", //cover , contain , stretch, 
+        display:"flex",
+        justifyContent:"flex-start",
+        alignItems:"flex-start",
+        flexDirection:"row",
+        width: windowWidth,
+        height:130
+    },
+    logoImg:{
+        width: 70,
+        height:70,
+        marginTop:20,
+        marginLeft:5
+    },
+    text_designTop:{
+        height: 120,
+        width: 150,
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"row",
     },
     image_design_1:{
         resizeMode: "cover", //cover , contain , stretch, 
@@ -208,27 +237,50 @@ var styles = StyleSheet.create({
     },
     linkText: {
         backgroundColor: "transparent",
-        width: "100%", 
         marginTop: 20,
         fontSize: 15, 
         justifyContent: "center", 
-        textAlign: "center"
+        textAlign: "center",
+        marginRight: 10,
+        marginBottom: 10
     }, 
+    innerLinkText:{
+        backgroundColor: "green",
+        height: 20,
+        width: 120, 
+    },
     loginLink: {
         color: "red", 
         fontStyle: "normal",
         textDecorationLine: "underline",
         textDecorationColor: "#000",
     },
+    submitBtnBottomTxt:{
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"row",
+        backgroundColor:"#009c10",
+        width: 100, 
+        height: 40,
+        borderRadius: 10,
+        marginTop: 10
+    },
     text_design:{
-        fontSize: 20,
+        fontSize: 21,
         textDecorationStyle: "solid",
-        textDecorationLine:'underline' ,
         color: '#000000',
         letterSpacing: 2,
-        paddingTop: 70,
         fontWeight:"bold",
-    }
+    },
+    linkTexts: {
+        backgroundColor: "transparent",
+        fontSize: 15, 
+        height : 40,
+        width: 100,
+        textAlign: "center",
+        paddingTop: 7,
+    },
 })
 
 export default Register
