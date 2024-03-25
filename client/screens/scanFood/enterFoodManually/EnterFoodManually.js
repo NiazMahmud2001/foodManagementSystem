@@ -63,7 +63,7 @@ const EnterFoodManually = ({navigation , route}) => {
   const handleSubmit = async() => {
     // Add logic to handle form submission
     const currentYear = new Date().getFullYear();
-    if (year.length<=4 || day.length<2 || month.length<2){
+    if (year.length<4 || day.length<2 || month.length<2){
       alert(`Please enter the expiry date in : \n"01/01/2024" \nformat`)
     }
     if(name=="" || quantity=="" || weight=="" || day=="" || month=="" || year==""){

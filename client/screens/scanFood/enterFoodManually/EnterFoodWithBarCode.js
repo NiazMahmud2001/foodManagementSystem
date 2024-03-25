@@ -24,7 +24,7 @@ const DataComponent = props =>{
     const [quantity, setQuantity] = useState();
     const [weight, setWeight] = useState('');
     const [isDarkMode, setIsDarkMode] = useState(false);
-
+s
     const [day, setDay] = useState(expDate[0]+expDate[1]);
     const [month, setMonth] = useState(expDate[3]+expDate[4]);
     //const [year, setYear] = useState(expDate[6]+expDate[7]+ expDate[8]+expDate[9]);
@@ -48,11 +48,11 @@ const DataComponent = props =>{
     const handleSubmit = async () => {
         // Add logic to handle form submission
         if(name=="" || !id || quantity=="" || weight=="" || day=="" || month=="" || year==""){
-        alert(`please enter name, id, quantity, weight , day,month,year`)
+            alert(`please enter name, id, quantity, weight , day,month,year`)
         }else{
             console.log(port)
             try{
-                var regFood_url = `http://192.168.70.35:9090/api/auth/register/food/UserFood/registerFood`;
+                var regFood_url = `http://${ip}:9090/api/auth/register/food/UserFood/registerFood`;
                 const data = await axios.post(
                     regFood_url , 
                     {
@@ -67,7 +67,7 @@ const DataComponent = props =>{
                 //console.log("checking added or not: ", data.data.success)
                 //console.log('Form submitted:', { name, id, quantity, weight , day,month,year});
                 if(data.data.success){
-                    var foodFetch_url = `http://192.168.70.35:9090/api/auth/fetch/food/allFood/fetchFood`;
+                    var foodFetch_url = `http://${ip}:9090/api/auth/fetch/food/allFood/fetchFood`;
                     const {data} = await axios.post(
                         foodFetch_url , 
                         {
